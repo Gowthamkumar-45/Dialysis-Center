@@ -1,0 +1,178 @@
+.staff-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.staff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.staff-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.add-staff-btn {
+  background-color: #0ea5e9;
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+
+.staff-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+}
+
+.search-staff {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  flex: 1;
+}
+
+.search-staff input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+.role-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.role-pill {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.role-pill.active {
+  background-color: #0ea5e9;
+  color: white;
+  border-color: #0ea5e9;
+}
+
+.staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.staff-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: all 0.2s;
+}
+
+.staff-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.staff-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.staff-avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.staff-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  object-fit: cover;
+  background-color: #f1f5f9;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+}
+
+.status-indicator.on-duty { background-color: #10b981; }
+.status-indicator.off-duty { background-color: #94a3b8; }
+
+.more-btn {
+  color: #94a3b8;
+  background: transparent;
+}
+
+.staff-info h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.staff-role {
+  font-size: 0.8125rem;
+  color: #0ea5e9;
+  font-weight: 600;
+}
+
+.staff-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.staff-footer {
+  margin-top: 0.5rem;
+}
+
+.view-profile-btn {
+  width: 100%;
+  padding: 0.625rem;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.view-profile-btn:hover {
+  background-color: #f1f5f9;
+}

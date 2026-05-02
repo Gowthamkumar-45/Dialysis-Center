@@ -1,0 +1,99 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 280px); /* Ensure it spans correctly */
+}
+
+.content-header {
+  height: 70px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eef2f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f8fafc;
+  padding: 0.625rem 1rem;
+  border-radius: 10px;
+  width: 400px;
+  color: #64748b;
+}
+
+.header-search-container input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.notif-box {
+  position: relative;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.notif-dot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444;
+  border: 1.5px solid #ffffff;
+  border-radius: 50%;
+}
+
+.user-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-header {
+  width: 36px;
+  height: 36px;
+  background-color: #06b6d4;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.user-name-header {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9375rem;
+}
+
+.page-container {
+  padding: 1.5rem 1rem;
+  flex: 1;
+}

@@ -1,0 +1,14 @@
+/* App.css can be used for global overrides if needed */
+.App {
+  text-align: left;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}

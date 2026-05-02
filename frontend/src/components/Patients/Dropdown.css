@@ -1,0 +1,73 @@
+.custom-dropdown {
+  position: relative;
+  width: 180px;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem; /* Reduced padding */
+  background-color: #ffffff;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.8125rem; /* Reduced from 0.875rem */
+}
+
+.dropdown-trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dropdown-trigger .rotate {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 0.5rem;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+.dropdown-item.selected {
+  background-color: #2dd4bf; /* Teal color from image */
+  color: #ffffff;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,61 @@
+:root {
+  --primary: #3b82f6;
+  --primary-light: #eff6ff;
+  --secondary: #06b6d4;
+  --secondary-light: #ecfeff;
+  --success: #10b981;
+  --success-light: #f0fdf4;
+  --warning: #f59e0b;
+  --warning-light: #fffbeb;
+  --danger: #ef4444;
+  --danger-light: #fef2f2;
+  --info: #6366f1;
+  --info-light: #eef2ff;
+  --violet: #8b5cf6;
+  --violet-light: #f5f3ff;
+  --pink: #ec4899;
+  --pink-light: #fdf2f8;
+  
+  --background: #f8fafc;
+  --sidebar-bg: #ffffff;
+  --card-bg: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Gradients for stats */
+.bg-blue-gradient { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.bg-teal-gradient { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+.bg-emerald-gradient { background: linear-gradient(135deg, #10b981, #059669); }
+.bg-amber-gradient { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.bg-indigo-gradient { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+.bg-violet-gradient { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.bg-rose-gradient { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.bg-pink-gradient { background: linear-gradient(135deg, #ec4899, #db2777); }
