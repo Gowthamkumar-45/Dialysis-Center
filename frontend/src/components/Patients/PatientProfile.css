@@ -133,9 +133,16 @@
   color: #64748b;
 }
 
-.msg-patient-btn {
+.sidebar-actions {
   width: 100%;
   margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.msg-patient-btn, .call-patient-btn {
+  width: 100%;
   padding: 0.875rem;
   border-radius: 12px;
   border: 1.5px solid #f1f5f9;
@@ -151,9 +158,20 @@
   transition: all 0.2s;
 }
 
+.call-patient-btn {
+  background: #f0f9ff;
+  border-color: #e0f2fe;
+  color: #0369a1;
+}
+
 .msg-patient-btn:hover {
   background: #f8fafc;
   border-color: #e2e8f0;
+}
+
+.call-patient-btn:hover {
+  background: #e0f2fe;
+  border-color: #bae6fd;
 }
 
 /* Main Content area */
@@ -631,4 +649,90 @@
 .btn-view-record:hover {
   background: #e2e8f0;
   color: #0ea5e9;
+}
+
+/* Action Icons */
+.action-icons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.icon-btn {
+  background: #f8fafc;
+  border: 1.5px solid #f1f5f9;
+  color: #64748b;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icon-btn.view:hover {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: #0ea5e9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(14, 165, 233, 0.1);
+}
+
+.icon-btn.edit:hover {
+  background: #fefce8;
+  border-color: #fef08a;
+  color: #eab308;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(234, 179, 8, 0.1);
+}
+
+/* Extended Profile Styles */
+.diagnosis-card.full-width-card {
+  grid-column: span 2;
+}
+
+.diag-info-grid.three-col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.v-text {
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.commitments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.commit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.commit-item.checked {
+  color: #16a34a;
+  background: #f0fdf4;
+  border: 1px solid #dcfce7;
+}
+
+.commit-item.pending {
+  color: #94a3b8;
+  opacity: 0.6;
+  border: 1px dashed #e2e8f0;
+}
+
+.diag-item.full-width {
+  grid-column: span 3;
 }

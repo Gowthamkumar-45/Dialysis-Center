@@ -41,7 +41,7 @@ export const treatmentSessionService = {
   getAll: () => api.get('/treatment-sessions/'),
   getById: (id) => api.get(`/treatment-sessions/${id}/`),
   create: (data) => api.post('/treatment-sessions/', data),
-  update: (id, data) => api.put(`/treatment-sessions/${id}/`, data),
+  update: (id, data) => api.patch(`/treatment-sessions/${id}/`, data),
   delete: (id) => api.delete(`/treatment-sessions/${id}/`),
 };
 

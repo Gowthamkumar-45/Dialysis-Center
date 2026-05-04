@@ -44,6 +44,50 @@ class Patient(models.Model):
     
     notes = models.TextField(null=True, blank=True)
     
+    # Registration Form - Identity & Contact
+    relation_type = models.CharField(max_length=10, null=True, blank=True)
+    relation_name = models.CharField(max_length=100, null=True, blank=True)
+    permanent_address = models.TextField(null=True, blank=True)
+    contact_person_1_name = models.CharField(max_length=100, null=True, blank=True)
+    contact_person_1_phone = models.CharField(max_length=20, null=True, blank=True)
+    contact_person_2_name = models.CharField(max_length=100, null=True, blank=True)
+    contact_person_2_phone = models.CharField(max_length=20, null=True, blank=True)
+    contact_person_3_name = models.CharField(max_length=100, null=True, blank=True)
+    contact_person_3_phone = models.CharField(max_length=20, null=True, blank=True)
+
+    # Registration Form - Socio-Economic
+    education = models.CharField(max_length=100, null=True, blank=True)
+    occupation_past = models.CharField(max_length=100, null=True, blank=True)
+    occupation_present = models.CharField(max_length=100, null=True, blank=True)
+    income_source = models.CharField(max_length=100, null=True, blank=True) # Salary/Pension/Unemployed
+    dialysis_supported_by = models.CharField(max_length=100, null=True, blank=True)
+    supporting_person_income = models.CharField(max_length=50, null=True, blank=True)
+    marital_status = models.CharField(max_length=50, null=True, blank=True)
+    family_constellation = models.TextField(null=True, blank=True)
+
+    # Registration Form - Medical
+    ckd_stage_v = models.BooleanField(default=False)
+    others_diagnosis = models.TextField(null=True, blank=True)
+    av_fistula_created_on = models.DateField(null=True, blank=True)
+    dialysis_commenced_on = models.DateField(null=True, blank=True)
+    past_medical_history = models.TextField(null=True, blank=True)
+
+    # Scheme Patient Investigations
+    usg_abdomen = models.CharField(max_length=255, null=True, blank=True)
+    echo = models.CharField(max_length=255, null=True, blank=True)
+    urea = models.CharField(max_length=100, null=True, blank=True)
+    creatinine = models.CharField(max_length=100, null=True, blank=True)
+    haemoglobin = models.CharField(max_length=100, null=True, blank=True)
+    electrolytes = models.CharField(max_length=255, null=True, blank=True)
+
+    # Patients Commitments & Registration details
+    has_aadhar = models.BooleanField(default=False)
+    has_ration = models.BooleanField(default=False)
+    has_cmchis = models.BooleanField(default=False)
+    registration_date = models.DateField(null=True, blank=True)
+    registration_done_by = models.CharField(max_length=100, null=True, blank=True)
+    unit_name = models.CharField(max_length=100, null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

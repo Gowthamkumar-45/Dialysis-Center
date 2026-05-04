@@ -183,4 +183,31 @@
 }
 
 
-/* Removed global date picker indicator expansion that was overlapping other fields */
+/* Layout utility classes for the Registration Form Modal */
+.section-title {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #0ea5e9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1.5rem 0 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.section-title:first-child {
+  margin-top: 0.5rem;
+}
+
+.input-group {
+  display: flex;
+  gap: 4px;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.req {
+  color: #ef4444;
+}

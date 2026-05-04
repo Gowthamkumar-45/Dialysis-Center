@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Activity, Heart, Weight, AlertCircle, CheckCircle } from 'lucide-react';
-import { appointmentService, patientService, treatmentSessionService } from '../../services/api';
+import { X, Save, Activity, Heart, Weight, AlertCircle, CheckCircle, User } from 'lucide-react';
+import { appointmentService, patientService, treatmentSessionService, staffService } from '../../services/api';
 import './SessionReportModal.css';
 
 const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    attending_staff: '',
     post_weight: '',
     post_bp: '',
     fluid_removed: '',
@@ -15,11 +16,25 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
     outcome: 'Optimal',
     notes: ''
   });
+  const [staffMembers, setStaffMembers] = useState([]);
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const response = await staffService.getAll();
+        setStaffMembers(response.data);
+      } catch (error) {
+        console.error('Error fetching staff members:', error);
+      }
+    };
+    fetchStaff();
+  }, []);
 
   useEffect(() => {
     if (appointment && isOpen) {
       // Initialize with any existing data if available
       setFormData({
+        attending_staff: appointment.staff_name || appointment.attending_staff || '',
         post_weight: appointment.post_weight || '',
         post_bp: appointment.post_bp || '',
         fluid_removed: appointment.fluid_removed || '',
@@ -47,7 +62,7 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
       });
 
       // Determine the best staff name to record
-      const finalStaffName = appointment.staff_name || appointment.attending_staff || 'Medical Staff';
+      const finalStaffName = formData.attending_staff || appointment.staff_name || 'Medical Staff';
 
       // Safely parse numeric values to avoid NaN errors
       const safePostWeight = formData.post_weight ? parseFloat(formData.post_weight) : null;
@@ -105,6 +120,48 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
 
         <div className="modal-body">
           <div className="report-vitals-grid">
+            <div className="form-group full-width" style={{ gridColumn: 'span 2' }}>
+              <label><User size={16} /> Attended Name</label>
+              <select 
+                name="attending_staff"
+                value={formData.attending_staff}
+                onChange={handleInputChange}
+                className="modal-select"
+              >
+                <option value="">Select Attending Staff...</option>
+                {formData.attending_staff && !staffMembers.some(s => s.name === formData.attending_staff) && (
+                  <option value={formData.attending_staff}>{formData.attending_staff}</option>
+                )}
+                {['Doctor', 'Nurse', 'Technician', 'Support'].map(role => {
+                  const roleStaff = staffMembers.filter(s => s.role === role);
+                  if (roleStaff.length === 0) return null;
+                  return (
+                    <optgroup key={role} label={`${role}s`}>
+                      {roleStaff.map(s => (
+                        <option key={s.id} value={s.name}>{s.name}</option>
+                      ))}
+                    </optgroup>
+                  );
+                })}
+                {/* Fallback if no staff in DB yet */}
+                {staffMembers.length === 0 && (
+                  <>
+                    <optgroup label="Doctors">
+                      <option value="Dr. Sarah Wilson">Dr. Sarah Wilson</option>
+                      <option value="Dr. James Miller">Dr. James Miller</option>
+                    </optgroup>
+                    <optgroup label="Nurses">
+                      <option value="RN Mark Thompson">RN Mark Thompson</option>
+                      <option value="RN Elena Cruz">RN Elena Cruz</option>
+                      <option value="RN Priya Sharma">RN Priya Sharma</option>
+                    </optgroup>
+                    <optgroup label="Technicians">
+                      <option value="Tech David Chen">Tech David Chen</option>
+                    </optgroup>
+                  </>
+                )}
+              </select>
+            </div>
             <div className="form-group">
               <label><Weight size={16} /> Post-Treatment Weight (kg)</label>
               <input 
@@ -112,7 +169,7 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
                 name="post_weight"
                 value={formData.post_weight}
                 onChange={handleInputChange}
-                placeholder="0.0"
+                placeholder="0.0 kg"
                 step="0.1"
               />
             </div>
@@ -133,7 +190,7 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
                 name="fluid_removed"
                 value={formData.fluid_removed}
                 onChange={handleInputChange}
-                placeholder="0.0"
+                placeholder="0.0 L"
                 step="0.1"
               />
             </div>
