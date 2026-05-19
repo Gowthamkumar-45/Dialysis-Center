@@ -10,7 +10,7 @@ import {
   Activity,
   FileText,
 } from 'lucide-react';
-import { staffService, appointmentService, getFullImageUrl } from '../../services/api';
+import { staffService, appointmentService, attendanceService, getFullImageUrl } from '../../services/api';
 import './StaffProfile.css';
 
 const StaffProfile = () => {
@@ -19,15 +19,17 @@ const StaffProfile = () => {
   const [activeTab, setActiveTab] = useState('Overview');
   const [member, setMember] = useState(null);
   const [appointments, setAppointments] = useState([]);
+  const [attendancePercentage, setAttendancePercentage] = useState('100%');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [memberRes, apptRes] = await Promise.all([
+        const [memberRes, apptRes, attendanceRes] = await Promise.all([
           staffService.getById(id),
-          appointmentService.getAll()
+          appointmentService.getAll(),
+          attendanceService.getAll({ staff: id })
         ]);
 
         setMember(memberRes.data);
@@ -41,6 +43,25 @@ const StaffProfile = () => {
         ).sort((a, b) => new Date(a.date) - new Date(b.date));
 
         setAppointments(staffAppts);
+
+        // Calculate attendance percentage dynamically
+        const attendanceRecords = attendanceRes.data || [];
+        if (attendanceRecords.length > 0) {
+          const activeRecords = attendanceRecords.filter(r => r.status !== 'Leave');
+          if (activeRecords.length > 0) {
+            const attendedCount = activeRecords.reduce((acc, r) => {
+              if (r.status === 'Present' || r.status === 'Late') return acc + 1;
+              if (r.status === 'Half-Day') return acc + 0.5;
+              return acc;
+            }, 0);
+            const pct = Math.round((attendedCount / activeRecords.length) * 100);
+            setAttendancePercentage(`${pct}%`);
+          } else {
+            setAttendancePercentage('100%');
+          }
+        } else {
+          setAttendancePercentage('100%');
+        }
       } catch (err) {
         console.error('Error fetching staff data:', err);
       } finally {
@@ -58,7 +79,7 @@ const StaffProfile = () => {
       color: 'amber' 
     },
     { label: 'Procedures', value: '—', icon: <Award size={18} />, color: 'sky' },
-    { label: 'Attendance', value: '98%', icon: <Calendar size={18} />, color: 'emerald' },
+    { label: 'Attendance', value: attendancePercentage, icon: <Calendar size={18} />, color: 'emerald' },
   ];
 
   if (loading) {
