@@ -33,11 +33,7 @@ services:
         destination: "/index.html"
     envVars:
       - key: REACT_APP_API_URL
-        fromService:
-          type: web
-          name: dialysis-backend
-          property: url
-          path: /api
+        value: "https://your-backend-url.onrender.com/api"
 
 databases:
   - name: dialysis-db
