@@ -8,20 +8,6 @@ python manage.py collectstatic --no-input
 python manage.py migrate
 
 # Create superuser automatically if environment variables are set
-python -c "
-import os, django
-django.setup()
-from django.contrib.auth import get_user_model
-User = get_user_model()
-username = os.environ.get('DJANGO_SUPERUSER_USERNAME')
-password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
-if username and password:
-    if not User.objects.filter(username=username).exists():
-        User.objects.create_superuser(username, 'admin@example.com', password)
-        print('Superuser created successfully.')
-    else:
-        user_obj = User.objects.get(username=username)
-        user_obj.set_password(password)
-        user_obj.save()
-        print('Superuser password updated successfully.')
-" || true
+if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
+    python manage.py createsuperuser --no-input || true
+fi
