@@ -20,5 +20,8 @@ if username and password:
         User.objects.create_superuser(username, 'admin@example.com', password)
         print('Superuser created successfully.')
     else:
-        print('Superuser already exists.')
+        user_obj = User.objects.get(username=username)
+        user_obj.set_password(password)
+        user_obj.save()
+        print('Superuser password updated successfully.')
 " || true
