@@ -22,11 +22,10 @@ services:
   # React Frontend Static Site
   - type: web
     name: dialysis-frontend
-    env: static
+    runtime: static
     rootDir: frontend
     buildCommand: "npm install && npm run build"
     staticPublishPath: "build"
-    plan: free
     routes:
       - type: rewrite
         source: "/*"
