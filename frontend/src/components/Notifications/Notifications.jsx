@@ -163,15 +163,11 @@ const Notifications = () => {
         <div className="notif-filter-group">
           <Filter size={14} className="notif-filter-ico" />
           <span className="notif-filter-label">Status</span>
-          {['all', 'unread', 'read'].map((opt) => (
-            <button
-              key={opt}
-              className={`notif-pill ${readFilter === opt ? 'active' : ''}`}
-              onClick={() => setReadFilter(opt)}
-            >
-              {opt === 'all' ? 'All' : opt === 'unread' ? 'Unread' : 'Read'}
-            </button>
-          ))}
+          <select className="notif-select" value={readFilter} onChange={(e) => setReadFilter(e.target.value)}>
+            <option value="all">All Statuses</option>
+            <option value="unread">Unread</option>
+            <option value="read">Read</option>
+          </select>
         </div>
         <div className="notif-filter-group">
           <span className="notif-filter-label">Severity</span>

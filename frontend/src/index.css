@@ -59,3 +59,15 @@ body {
 .bg-violet-gradient { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
 .bg-rose-gradient { background: linear-gradient(135deg, #ef4444, #dc2626); }
 .bg-pink-gradient { background: linear-gradient(135deg, #ec4899, #db2777); }
+
+/* Global custom dropdown arrow styling for all select elements across all forms */
+select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 0.95rem !important;
+  padding-right: 2.2rem !important;
+}
