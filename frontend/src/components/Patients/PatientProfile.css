@@ -462,7 +462,7 @@
 
 .card-header-inner h3 {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #1e293b;
   margin: 0;
 }
@@ -478,7 +478,7 @@
 .diag-main {
   display: block;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #0ea5e9;
   margin-bottom: 4px;
 }
@@ -503,7 +503,7 @@
 
 .diag-item .l {
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -511,7 +511,7 @@
 
 .diag-item .v {
   font-size: 0.85rem;
-  font-weight: 800;
+  font-weight: 600;
   color: #1e293b;
   line-height: 1.2;
 }
