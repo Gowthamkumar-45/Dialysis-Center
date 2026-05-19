@@ -832,16 +832,23 @@ const Staff = () => {
                             onChange={(e) => setCurrentStaff(prev => ({...prev, id_proof: e.target.files[0]}))} 
                             hidden
                           />
-                          <label htmlFor="id_proof" className="staff-upload-box">
-                            <div className="upload-box-content">
-                              <Scan size={20} className="text-sky-400" />
-                              <span>
-                                {currentStaff.id_proof ? (
-                                  currentStaff.id_proof instanceof File ? currentStaff.id_proof.name : 'ID Proof Uploaded'
-                                ) : 'Upload ID Proof'}
+                          {currentStaff.id_proof ? (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '1rem' }}>
+                              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {currentStaff.id_proof instanceof File ? currentStaff.id_proof.name : 'ID Proof Uploaded'}
                               </span>
+                              <label htmlFor="id_proof" className="upload-btn" style={{ margin: 0, cursor: 'pointer' }}>
+                                <Upload size={16} /> Change File
+                              </label>
                             </div>
-                          </label>
+                          ) : (
+                            <label htmlFor="id_proof" className="staff-upload-box">
+                              <div className="upload-box-content">
+                                <Scan size={20} className="text-sky-400" />
+                                <span>Upload ID Proof</span>
+                              </div>
+                            </label>
+                          )}
                           {typeof currentStaff.id_proof === 'string' && currentStaff.id_proof && (
                             <div className="existing-doc-hint">
                               <a href={getFullImageUrl(currentStaff.id_proof)} target="_blank" rel="noreferrer">
@@ -865,16 +872,23 @@ const Staff = () => {
                             onChange={(e) => setCurrentStaff(prev => ({...prev, qualification_proof: e.target.files[0]}))} 
                             hidden
                           />
-                          <label htmlFor="qualification_proof" className="staff-upload-box">
-                            <div className="upload-box-content">
-                              <GraduationCap size={20} className="text-sky-400" />
-                              <span>
-                                {currentStaff.qualification_proof ? (
-                                  currentStaff.qualification_proof instanceof File ? currentStaff.qualification_proof.name : 'Certificate Uploaded'
-                                ) : 'Upload Certificate'}
+                          {currentStaff.qualification_proof ? (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '1rem' }}>
+                              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {currentStaff.qualification_proof instanceof File ? currentStaff.qualification_proof.name : 'Certificate Uploaded'}
                               </span>
+                              <label htmlFor="qualification_proof" className="upload-btn" style={{ margin: 0, cursor: 'pointer' }}>
+                                <Upload size={16} /> Change File
+                              </label>
                             </div>
-                          </label>
+                          ) : (
+                            <label htmlFor="qualification_proof" className="staff-upload-box">
+                              <div className="upload-box-content">
+                                <GraduationCap size={20} className="text-sky-400" />
+                                <span>Upload Certificate</span>
+                              </div>
+                            </label>
+                          )}
                           {typeof currentStaff.qualification_proof === 'string' && currentStaff.qualification_proof && (
                             <div className="existing-doc-hint">
                               <a href={getFullImageUrl(currentStaff.qualification_proof)} target="_blank" rel="noreferrer">
