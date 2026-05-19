@@ -13,13 +13,29 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Token ${token}`;
   }
+  
+  // Trigger loading loader if it is not a background/poll request
+  const isBackground = config.url && config.url.includes('/notifications/unread_count/');
+  if (!isBackground) {
+    window.dispatchEvent(new CustomEvent('api-loading-start'));
+  }
   return config;
 });
 
 // If we get a 401, clear stale token and bounce to login
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const isBackground = response.config && response.config.url && response.config.url.includes('/notifications/unread_count/');
+    if (!isBackground) {
+      window.dispatchEvent(new CustomEvent('api-loading-end'));
+    }
+    return response;
+  },
   (error) => {
+    const isBackground = error.config && error.config.url && error.config.url.includes('/notifications/unread_count/');
+    if (!isBackground) {
+      window.dispatchEvent(new CustomEvent('api-loading-end'));
+    }
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('authToken');
       localStorage.removeItem('authUser');

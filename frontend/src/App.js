@@ -18,13 +18,17 @@ import History from './components/History/History';
 import Notifications from './components/Notifications/Notifications';
 import ProtectedRoute from './components/Login/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import { LoadingProvider } from './context/LoadingContext';
+import StethoscopeLoader from './components/Loader/StethoscopeLoader';
 import './App.css';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
+    <LoadingProvider>
+      <AuthProvider>
+        <Router>
+          <StethoscopeLoader />
+          <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
 
@@ -57,6 +61,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+  </LoadingProvider>
   );
 }
 
