@@ -1,0 +1,101 @@
+.stethoscope-loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 999999; /* Higher than any modal or sidebar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.stethoscope-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  gap: 1.5rem;
+}
+
+.stethoscope-pulse-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.4);
+  animation: heart-beat 1.4s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+  position: relative;
+  z-index: 10;
+}
+
+.stethoscope-loader-icon {
+  animation: icon-float 2.8s infinite ease-in-out;
+}
+
+/* Pulsing concentric rings representing ECG heartbeat waves */
+.pulse-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 2px solid #0ea5e9;
+  opacity: 0;
+  animation: pulse-ring 1.4s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+  z-index: 1;
+}
+
+.wave-delayed {
+  animation-delay: 0.35s;
+}
+
+.stethoscope-loader-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: text-pulse 1.4s infinite ease-in-out;
+}
+
+/* Keyframe animations */
+@keyframes heart-beat {
+  0% { transform: scale(0.95); }
+  15% { transform: scale(1.1); }
+  30% { transform: scale(0.98); }
+  45% { transform: scale(1.15); }
+  60% { transform: scale(0.95); }
+  100% { transform: scale(0.95); }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  80%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes text-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes icon-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
