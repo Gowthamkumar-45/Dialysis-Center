@@ -6,7 +6,7 @@
 
 .patients-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-end;
   margin-bottom: 0.25rem;
 }
@@ -134,6 +134,12 @@
   font-weight: 700;
   cursor: pointer;
   padding: 0.5rem;
+  transition: all 0.2s;
+}
+
+.clear-filters:hover {
+  color: #0ea5e9;
+  text-decoration: underline;
 }
 
 .filters-right {
@@ -249,14 +255,15 @@
 }
 
 .hiv-tag-small {
-  background-color: #f97316;
-  color: white;
-  font-size: 0.6rem;
-  font-weight: 900;
-  padding: 2px 6px;
-  border-radius: 4px;
+  background-color: #fff7ed;
+  color: #c2410c;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #ffedd5;
   text-transform: uppercase;
-  margin-left: 6px;
+  margin-left: 8px;
 }
 
 .p-id-sub {
@@ -280,23 +287,35 @@
 }
 
 .status-pill-new.active {
-  background-color: transparent !important;
-  color: #15803d !important;
+  background-color: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #10b98133;
+  border-radius: 9999px;
+  padding: 4px 12px;
 }
 
 .status-pill-new.pending {
-  background-color: transparent !important;
-  color: #b45309 !important;
+  background-color: #fffbeb !important;
+  color: #d97706 !important;
+  border: 1px solid #f59e0b33;
+  border-radius: 9999px;
+  padding: 4px 12px;
 }
 
 .status-pill-new.inactive {
-  background-color: transparent !important;
-  color: #b91c1c !important;
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #ef444433;
+  border-radius: 9999px;
+  padding: 4px 12px;
 }
 
 .status-pill-new.transferred {
-  background-color: transparent !important;
-  color: #1d4ed8 !important;
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #3b82f633;
+  border-radius: 9999px;
+  padding: 4px 12px;
 }
 
 /* Common Text */

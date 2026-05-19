@@ -1,0 +1,327 @@
+/* ============================================================
+   Notification Bell — header dropdown
+   ============================================================ */
+
+.nb-wrapper {
+  position: relative;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.nb-trigger {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.nb-trigger:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.nb-trigger.has-unread {
+  color: #0ea5e9;
+  border-color: #bae6fd;
+  background: #f0f9ff;
+}
+
+.nb-trigger.has-unread:hover {
+  background: #e0f2fe;
+}
+
+.nb-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  animation: nb-pop 0.25s ease;
+}
+
+@keyframes nb-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+/* -------- Dropdown -------- */
+.nb-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px -16px rgba(15, 23, 42, 0.22);
+  z-index: 60;
+  overflow: hidden;
+  animation: nb-slide 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes nb-slide {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.nb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(79, 70, 229, 0.04));
+}
+
+.nb-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.nb-header-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.nb-mark-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4f46e5;
+  background: #eef2ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+
+.nb-mark-all:hover {
+  background: #e0e7ff;
+}
+
+/* -------- List -------- */
+.nb-list {
+  max-height: 460px;
+  overflow-y: auto;
+}
+
+.nb-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.nb-list::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+
+.nb-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f8fafc;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.nb-item:hover {
+  background: #f8fafc;
+}
+
+.nb-item.unread {
+  background: #f0f9ff;
+}
+
+.nb-item.unread:hover {
+  background: #e0f2fe;
+}
+
+.nb-item-ico {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nb-item-ico.tone-info     { background: #e0f2fe; color: #0284c7; }
+.nb-item-ico.tone-success  { background: #dcfce7; color: #16a34a; }
+.nb-item-ico.tone-warning  { background: #fef3c7; color: #d97706; }
+.nb-item-ico.tone-critical { background: #fee2e2; color: #dc2626; }
+
+.nb-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.nb-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nb-item-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.nb-item-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.nb-item-msg {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.nb-item-time {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.nb-item-close {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nb-item-close:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.nb-unread-dot {
+  position: absolute;
+  top: 14px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  background: #0ea5e9;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
+}
+
+.nb-item.unread .nb-item-close + .nb-unread-dot {
+  display: none;
+}
+
+/* -------- Empty -------- */
+.nb-empty {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #94a3b8;
+}
+
+.nb-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.nb-empty span {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  max-width: 240px;
+  line-height: 1.4;
+}
+
+/* -------- Footer -------- */
+.nb-footer {
+  padding: 10px 14px;
+  border-top: 1px solid #f1f5f9;
+  background: #fafbff;
+}
+
+.nb-see-all {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4f46e5;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+
+.nb-see-all:hover {
+  background: #eef2ff;
+}
+
+@media (max-width: 480px) {
+  .nb-dropdown {
+    width: 320px;
+    right: -10px;
+  }
+}

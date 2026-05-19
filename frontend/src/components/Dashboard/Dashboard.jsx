@@ -1,46 +1,66 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  AlertCircle, 
-  ChevronRight, 
-  UserPlus, 
-  Calendar, 
-  ClipboardList, 
-  FileText, 
+import {
+  AlertCircle,
+  ChevronRight,
+  UserPlus,
+  Calendar,
+  ClipboardList,
+  FileText,
   Package,
   Activity,
   Users,
   TrendingUp,
-  CreditCard,
   Clock,
   ShieldAlert,
-  CheckCircle2
+  CheckCircle2,
+  UserCheck,
+  UserMinus,
+  PackageX,
+  CalendarOff,
+  Wrench,
+  Heart,
+  UserX
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { machineService, appointmentService, patientService } from '../../services/api';
+import {  patientService, staffService, appointmentService, 
+  treatmentSessionService, machineService, attendanceService,
+  inventoryService
+} from '../../services/api';
+import SessionReportModal from '../Scheduling/SessionReportModal';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [machines, setMachines] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [staff, setStaff] = useState([]);
+  const [treatmentSessions, setTreatmentSessions] = useState([]);
+  const [attendance, setAttendance] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
     try {
-      const [machinesRes, apptsRes, patientsRes] = await Promise.all([
+      const [machinesRes, apptsRes, patientsRes, staffRes, sessionsRes, attendanceRes, inventoryRes] = await Promise.all([
         machineService.getAll(),
         appointmentService.getAll(),
-        patientService.getAll()
+        patientService.getAll(),
+        staffService.getAll(),
+        treatmentSessionService.getAll(),
+        attendanceService.getRoster(new Date().toISOString().split('T')[0]),
+        inventoryService.getAll()
       ]);
       setMachines(machinesRes.data);
       setAppointments(apptsRes.data);
       setPatients(patientsRes.data);
+      setStaff(staffRes.data);
+      setTreatmentSessions(sessionsRes.data);
+      setAttendance(attendanceRes.data.roster || []);
+      setInventory(inventoryRes.data || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -50,33 +70,97 @@ const Dashboard = () => {
 
   const handleResolve = async (alertItem) => {
     console.log("Resolving alert:", alertItem);
-    
-    // Logic based on alert type
-    if (alertItem.id.startsWith('doc-')) {
-      // Missing documentation - Navigate to patient profile
-      const patientId = alertItem.patientId;
-      if (patientId) {
-        navigate(`/patients/${patientId}`);
+    const id = alertItem.id;
+
+    // Machine misuse (incl. HIV / HCV / HIV_HCV dual / standard)
+    if (id.startsWith('hiv-') || id.startsWith('hcv-') || id.startsWith('dual-') || id.startsWith('misuse-')) {
+      navigate(alertItem.appointmentId ? `/sessions?edit=${alertItem.appointmentId}` : '/sessions');
+      return;
+    }
+
+    // Double-booking
+    if (id.startsWith('db-')) {
+      navigate('/sessions');
+      return;
+    }
+
+    // Pending treatment-form documentation
+    if (id.startsWith('doc-') || id.startsWith('missing-doc-')) {
+      if (alertItem.appointmentId) {
+        const appt = appointments.find(a => a.id === alertItem.appointmentId);
+        if (appt) {
+          setSelectedAppointment(appt);
+          setIsReportModalOpen(true);
+        } else {
+          navigate(`/sessions?report=${alertItem.appointmentId}`);
+        }
+      } else {
+        navigate('/sessions');
       }
-    } else if (alertItem.id.startsWith('hiv-')) {
-      // HIV misuse - Open scheduling or just refresh data for now
-      window.alert('To resolve this, please reassign the patient to a standard machine in the Schedule.');
-      fetchData();
-    } else if (alertItem.id.startsWith('db-')) {
-      // Double booking
-      window.alert('To resolve this, please reschedule one of the conflicting appointments.');
-      fetchData();
+      return;
+    }
+
+    // Inventory issues (out / low / expiring / expired)
+    if (id.startsWith('stock-') || id.startsWith('exp-') || id.startsWith('exp-soon-')) {
+      navigate('/inventory');
+      return;
+    }
+
+    // Machine AMC expiry
+    if (id.startsWith('amc-') || id.startsWith('amc-soon-')) {
+      navigate(alertItem.machineId ? `/machines/${alertItem.machineId}` : '/machines');
+      return;
+    }
+
+    // Critical session outcome
+    if (id.startsWith('critical-')) {
+      if (alertItem.patientId) navigate(`/patients/${alertItem.patientId}`);
+      else navigate('/sessions');
+      return;
+    }
+
+    // Unmarked staff attendance
+    if (id === 'att-unmarked') {
+      navigate('/attendance');
+      return;
     }
   };
 
   const getCurrentTimeSlot = () => {
-    const hour = new Date().getHours();
-    if (hour >= 8 && hour < 10) return '08:00 AM';
-    if (hour >= 10 && hour < 12) return '10:00 AM';
-    if (hour >= 12 && hour < 14) return '12:00 PM';
-    if (hour >= 14 && hour < 16) return '02:00 PM';
-    if (hour >= 16 && hour < 18) return '04:00 PM';
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const totalMinutes = hour * 60 + minute;
+
+    // 07:30 AM (450 mins) - 11:30 AM (690 mins)
+    if (totalMinutes >= 450 && totalMinutes <= 690) return '07:30 AM - 11:30 AM';
+    
+    // 12:00 PM (720 mins) - 04:00 PM (960 mins)
+    if (totalMinutes >= 720 && totalMinutes <= 960) return '12:00 PM - 04:00 PM';
+    
     return null;
+  };
+
+  const getLiveStatus = (timeSlot, currentStatus) => {
+    if (currentStatus === 'Completed') return 'Completed';
+    
+    const [startStr] = timeSlot.split(' - ');
+    const now = new Date();
+    const [hours, minutes] = startStr.split(':');
+    const isPM = startStr.includes('PM');
+    
+    const startTime = new Date();
+    let h = parseInt(hours);
+    if (isPM && h !== 12) h += 12;
+    if (!isPM && h === 12) h = 0;
+    startTime.setHours(h, parseInt(minutes), 0);
+
+    const endTime = new Date(startTime);
+    endTime.setHours(startTime.getHours() + 4);
+
+    if (now >= startTime && now <= endTime) return 'In-Progress';
+    if (now > endTime) return 'Completed';
+    return 'Upcoming';
   };
 
   const getMachineStatus = (machineId) => {
@@ -131,42 +215,194 @@ const Dashboard = () => {
       }
     });
 
-    // 2. Detect HIV Machine Misuse
+    // 2. Detect Machine Misuse (HIV / HCV / Standard / HIV_HCV)
     appointments.forEach(appt => {
       if (appt.date === todayStr && appt.status !== 'Cancelled') {
         const machineObj = machines.find(m => m.id === appt.machine);
         const patientObj = patients.find(p => p.id === appt.patient);
-        
-        if (machineObj?.type === 'HIV' && patientObj && !patientObj.hiv_status) {
+
+        if (!machineObj || !patientObj) return;
+
+        const isPatientHiv = !!patientObj.hiv_status;
+        const isPatientHcv = !!patientObj.hepatitis_c;
+
+        if (machineObj.type === 'HIV' && !isPatientHiv) {
           activeAlerts.push({
             id: `hiv-${appt.id}`,
-            type: 'warning',
+            type: 'error',
             icon: <ShieldAlert size={18} />,
-            title: 'HIV machine misuse warning',
-            msg: `Standard patient ${patientObj.full_name} scheduled on HIV-dedicated machine #${machineObj.unit_number}`,
-            patientId: patientObj.id
+            title: 'HIV machine misuse',
+            msg: `Non-HIV patient ${patientObj.full_name} is using HIV-dedicated machine #${machineObj.unit_number}`,
+            patientId: patientObj.id,
+            appointmentId: appt.id
+          });
+        } else if (machineObj.type === 'HCV' && !isPatientHcv) {
+          activeAlerts.push({
+            id: `hcv-${appt.id}`,
+            type: 'error',
+            icon: <ShieldAlert size={18} />,
+            title: 'HCV machine misuse',
+            msg: `Non-HCV patient ${patientObj.full_name} is using HCV-dedicated machine #${machineObj.unit_number}`,
+            patientId: patientObj.id,
+            appointmentId: appt.id
+          });
+        } else if (machineObj.type === 'HIV_HCV' && !(isPatientHiv || isPatientHcv)) {
+          activeAlerts.push({
+            id: `dual-${appt.id}`,
+            type: 'error',
+            icon: <ShieldAlert size={18} />,
+            title: 'HIV/HCV machine misuse',
+            msg: `Standard patient ${patientObj.full_name} is using a HIV/HCV-dedicated machine #${machineObj.unit_number}`,
+            patientId: patientObj.id,
+            appointmentId: appt.id
+          });
+        } else if (machineObj.type === 'Standard' && (isPatientHiv || isPatientHcv)) {
+          activeAlerts.push({
+            id: `misuse-${appt.id}`,
+            type: 'error',
+            icon: <ShieldAlert size={18} />,
+            title: 'Standard machine misuse',
+            msg: `Infected patient ${patientObj.full_name} (${isPatientHiv ? 'HIV' : 'HCV'}) is using Standard machine #${machineObj.unit_number}`,
+            patientId: patientObj.id,
+            appointmentId: appt.id
           });
         }
       }
     });
 
-    // 3. Detect Missing Documentation (Consent Form mock logic)
+    // 4. Detect Logically Completed but Unfilled Treatment Forms.
+    // TreatmentSession has no FK to Appointment, so match by patient + date.
     appointments.forEach(appt => {
-      if (appt.date === todayStr && appt.status !== 'Cancelled') {
-        const patientObj = patients.find(p => p.id === appt.patient);
-        // Using "notes" as a proxy for missing documentation/consent in this demo
-        if (patientObj && (!patientObj.notes || patientObj.notes.trim() === "")) {
-          activeAlerts.push({
-            id: `doc-${appt.id}`,
-            type: 'info',
-            icon: <ClipboardList size={18} />,
-            title: 'Missing consent form',
-            msg: `Patient ${patientObj.full_name} (ID: ${patientObj.patient_id}) - treatment documentation incomplete`,
-            patientId: patientObj.id
-          });
+      if (appt.date === todayStr && appt.status !== 'Cancelled' && appt.status !== 'Completed') {
+        const liveStatus = getLiveStatus(appt.time_slot, appt.status);
+        if (liveStatus === 'Completed') {
+          const hasForm = treatmentSessions.some(s =>
+            s.patient === appt.patient && s.date === appt.date
+          );
+          if (!hasForm) {
+            const patientObj = patients.find(p => p.id === appt.patient);
+            activeAlerts.push({
+              id: `missing-doc-${appt.id}`,
+              type: 'warning',
+              icon: <ClipboardList size={18} />,
+              title: 'Treatment form pending',
+              msg: `Session for ${patientObj?.full_name || 'Patient'} finished but post-treatment data not recorded.`,
+              patientId: appt.patient,
+              appointmentId: appt.id
+            });
+          }
         }
       }
     });
+
+    // 5. Inventory — out of stock (critical)
+    inventory.forEach(item => {
+      if (item.stock <= 0) {
+        activeAlerts.push({
+          id: `stock-out-${item.id}`,
+          type: 'error',
+          icon: <PackageX size={18} />,
+          title: 'Out of stock',
+          msg: `${item.name} (${item.item_code}) is out of stock — re-order required immediately.`,
+        });
+      } else if (item.threshold && item.stock < item.threshold) {
+        activeAlerts.push({
+          id: `stock-low-${item.id}`,
+          type: 'warning',
+          icon: <Package size={18} />,
+          title: 'Low stock',
+          msg: `${item.name} is running low (${item.stock} ${item.unit || 'pcs'} left, threshold ${item.threshold}).`,
+        });
+      }
+    });
+
+    // 6. Inventory — expired or expiring within 30 days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const in30Days = new Date(today);
+    in30Days.setDate(today.getDate() + 30);
+
+    inventory.forEach(item => {
+      if (!item.expiry) return;
+      const expiry = new Date(item.expiry);
+      if (isNaN(expiry.getTime())) return;
+      if (expiry < today) {
+        activeAlerts.push({
+          id: `exp-${item.id}`,
+          type: 'error',
+          icon: <CalendarOff size={18} />,
+          title: 'Inventory expired',
+          msg: `${item.name} expired on ${item.expiry} — remove from circulation.`,
+        });
+      } else if (expiry <= in30Days) {
+        const days = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+        activeAlerts.push({
+          id: `exp-soon-${item.id}`,
+          type: 'warning',
+          icon: <CalendarOff size={18} />,
+          title: 'Inventory expiring soon',
+          msg: `${item.name} expires in ${days} day${days === 1 ? '' : 's'} (${item.expiry}).`,
+        });
+      }
+    });
+
+    // 7. Machine — AMC expiring within 30 days or expired
+    machines.forEach(machine => {
+      if (!machine.amc_upto) return;
+      const amc = new Date(machine.amc_upto);
+      if (isNaN(amc.getTime())) return;
+      if (amc < today) {
+        activeAlerts.push({
+          id: `amc-${machine.id}`,
+          type: 'warning',
+          icon: <Wrench size={18} />,
+          title: 'AMC expired',
+          msg: `Unit #${machine.unit_number} AMC expired on ${machine.amc_upto}.`,
+          machineId: machine.id,
+        });
+      } else if (amc <= in30Days) {
+        const days = Math.ceil((amc - today) / (1000 * 60 * 60 * 24));
+        activeAlerts.push({
+          id: `amc-soon-${machine.id}`,
+          type: 'info',
+          icon: <Wrench size={18} />,
+          title: 'AMC renewal due',
+          msg: `Unit #${machine.unit_number} AMC expires in ${days} day${days === 1 ? '' : 's'}.`,
+          machineId: machine.id,
+        });
+      }
+    });
+
+    // 8. Critical session outcomes recorded today
+    const criticalOutcomes = ['Critical', 'Bleeding', 'BP Dip Observed'];
+    treatmentSessions.forEach(s => {
+      if (s.date === todayStr && criticalOutcomes.includes(s.outcome)) {
+        const patientObj = patients.find(p => p.id === s.patient);
+        activeAlerts.push({
+          id: `critical-${s.id}`,
+          type: 'error',
+          icon: <Heart size={18} />,
+          title: 'Critical session outcome',
+          msg: `${patientObj?.full_name || 'Patient'} — ${s.outcome} during session today. Clinical review needed.`,
+          patientId: s.patient,
+        });
+      }
+    });
+
+    // 9. Staff attendance unmarked after 11 AM
+    const now = new Date();
+    if (now.getHours() >= 11 && attendance.length > 0) {
+      const unmarked = attendance.filter(a => a.status === 'Unmarked');
+      if (unmarked.length > 0) {
+        activeAlerts.push({
+          id: 'att-unmarked',
+          type: 'info',
+          icon: <UserX size={18} />,
+          title: 'Attendance unmarked',
+          msg: `${unmarked.length} staff member${unmarked.length === 1 ? "'s" : "s'"} attendance not yet recorded for today.`,
+        });
+      }
+    }
 
     return activeAlerts;
   };
@@ -175,26 +411,32 @@ const Dashboard = () => {
 
   // Calculate Dynamic Stats
   const today = new Date().toISOString().split('T')[0];
-  const todayAppts = appointments.filter(a => a.date === today);
+  const todayAppts = Array.isArray(appointments) ? appointments.filter(a => a.date === today) : [];
   
   const totalSessions = todayAppts.length;
   const completedSessions = todayAppts.filter(a => a.status === 'Completed').length;
   const pendingSessions = totalSessions - completedSessions;
   
   // Real active machines (current session)
-  const monitoringMachines = machines
-    .sort((a, b) => a.unit_number - b.unit_number)
-    .map(m => ({
-      ...m,
-      currentStatus: getMachineStatus(m.id)
-    }));
+  const monitoringMachines = Array.isArray(machines) 
+    ? machines
+        .sort((a, b) => a.unit_number - b.unit_number)
+        .map(m => ({
+          ...m,
+          currentStatus: getMachineStatus(m.id)
+        }))
+    : [];
 
   const activeMachinesCount = monitoringMachines.filter(m => m.currentStatus === 'In Use').length;
-  const totalMachinesCount = machines.length;
+  const totalMachinesCount = Array.isArray(machines) ? machines.length : 0;
   
   const uniquePatientsCount = new Set(todayAppts.map(a => a.patient)).size;
   
   const utilizationPercent = totalMachinesCount > 0 ? Math.round((activeMachinesCount / totalMachinesCount) * 100) : 0;
+
+  const totalStaffCount = attendance.length;
+  const presentStaffCount = attendance.filter(a => ['Present', 'Late', 'Half-Day'].includes(a.status)).length;
+  const onLeaveStaffCount = attendance.filter(a => a.status === 'On Leave').length;
 
   const stats = [
     { 
@@ -202,43 +444,87 @@ const Dashboard = () => {
       icon: <Calendar />, 
       label: 'Sessions Scheduled', 
       value: totalSessions.toString(), 
-      sub: `${completedSessions} completed • ${pendingSessions} pending` 
+      sub: `${completedSessions} completed • ${pendingSessions} pending`,
+      tone: 'blue'
     },
     { 
       id: 2, 
       icon: <Activity />, 
       label: 'Machines Active', 
       value: `${activeMachinesCount}/${totalMachinesCount}`, 
-      sub: `${monitoringMachines.filter(m => m.type === 'Standard' && m.currentStatus === 'In Use').length} standard • ${monitoringMachines.filter(m => m.type === 'HIV' && m.currentStatus === 'In Use').length} HIV` 
+      sub: `${monitoringMachines.filter(m => m.type === 'Standard' && m.currentStatus === 'In Use').length} standard • ${monitoringMachines.filter(m => m.type === 'HIV' && m.currentStatus === 'In Use').length} HIV`,
+      tone: 'cyan'
     },
     { 
       id: 3, 
       icon: <TrendingUp />, 
       label: 'Utilization Rate', 
       value: `${utilizationPercent}%`, 
-      sub: `Based on ${activeMachinesCount} active sessions` 
+      sub: `Based on ${activeMachinesCount} active sessions`,
+      tone: 'indigo'
     },
     { 
       id: 4, 
       icon: <Users />, 
+      label: 'Total Staffs', 
+      value: totalStaffCount.toString(), 
+      sub: 'Registered employees',
+      tone: 'slate'
+    },
+    { 
+      id: 5, 
+      icon: <UserCheck />, 
+      label: 'Staff Present', 
+      value: presentStaffCount.toString(), 
+      sub: 'Currently on duty',
+      tone: 'green'
+    },
+    { 
+      id: 6, 
+      icon: <UserMinus />, 
+      label: 'Staffs Leave', 
+      value: onLeaveStaffCount.toString(), 
+      sub: 'Approved absences',
+      tone: 'amber'
+    },
+    { 
+      id: 7, 
+      icon: <Users />, 
       label: 'Patients Scheduled', 
       value: uniquePatientsCount.toString(), 
-      sub: 'Unique patients today' 
+      sub: 'Unique patients today',
+      tone: 'violet'
+    },
+    { 
+      id: 8, 
+      icon: <Package />, 
+      label: 'Inventory Items', 
+      value: inventory.length.toString(), 
+      sub: 'Total stock items',
+      tone: 'indigo'
     }
   ];
 
+  const staffArray = Array.isArray(staff) ? staff : [];
+  const patientsArray = Array.isArray(patients) ? patients : [];
+
+  const staffOnDuty = staffArray.filter(s => s.is_on_duty).length;
+  const maintenanceMachines = Array.isArray(machines) ? machines.filter(m => m.status === 'Maintenance' || m.status === 'Out of Service').length : 0;
+  const activePatients = patientsArray.filter(p => p.status === 'Active').length;
+  const inactivePatients = patientsArray.filter(p => p.status !== 'Active').length;
+
   const secondaryStats = [
-    { id: 5, icon: <UserPlus />, label: 'Staff on Duty', value: '12', sub: '8 nurses • 4 techs' },
-    { id: 6, icon: <Package />, label: 'Inventory', value: '5', sub: '3 critical items' },
-    { id: 7, icon: <CreditCard />, label: 'Billing', value: '18', sub: '7 overdue invoices' },
-    { id: 8, icon: <CheckCircle2 />, label: 'Compliance', value: '98%', sub: '142 audits passed' },
+    { id: 5, icon: <UserPlus />, label: 'Staff on Duty',     value: staffOnDuty.toString(),                sub: `of ${staffArray.length} total staff` },
+    { id: 6, icon: <Package />,  label: 'Machines Online',   value: `${(Array.isArray(machines) ? machines.length : 0) - maintenanceMachines}`, sub: `${maintenanceMachines} under maintenance` },
+    { id: 7, icon: <Users />,    label: 'Active Patients',   value: activePatients.toString(),             sub: `${inactivePatients} inactive` },
+    { id: 8, icon: <CheckCircle2 />, label: 'Completed Today', value: completedSessions.toString(),        sub: `of ${totalSessions} scheduled` },
   ];
 
   const quickActions = [
-    { icon: <UserPlus />, label: 'Add New Patient', desc: 'Register new profile' },
-    { icon: <Calendar />, label: 'Create Schedule', desc: 'Book machine slot' },
-    { icon: <ClipboardList />, label: 'Log Treatment', desc: 'Record session data' },
-    { icon: <FileText />, label: 'Generate Invoice', desc: 'Create billing record' },
+    { icon: <UserPlus />,      label: 'Add New Patient',  desc: 'Register new profile',   route: '/patients', tone: 'blue' },
+    { icon: <Calendar />,      label: 'Book Session',     desc: 'Schedule machine slot',   route: '/sessions', tone: 'green' },
+    { icon: <ClipboardList />, label: 'Log Treatment',    desc: 'Record session data',     route: '/sessions', tone: 'amber' },
+    { icon: <FileText />,      label: 'View Reports',     desc: 'Clinical session history', route: '/sessions', tone: 'violet' },
   ];
 
   const todaySchedule = todayAppts
@@ -275,9 +561,9 @@ const Dashboard = () => {
       )}
 
       {/* Main Stats */}
-      <div className="stats-row">
+      <div className="dash-stats-row">
         {stats.map(stat => (
-          <div key={stat.id} className="stat-box card">
+          <div key={stat.id} className={`stat-box card tone-${stat.tone}`}>
             <div className="stat-top">
               <div className="stat-icon-bg">{stat.icon}</div>
               <span className="stat-val">{stat.value}</span>
@@ -306,7 +592,7 @@ const Dashboard = () => {
               <div key={idx} className="sched-row-new">
                 <div className="sched-time-box">
                   <span className="sched-time-main">{item.time_slot}</span>
-                  <span className="sched-duration-label">3h session</span>
+                  <span className="sched-duration-label">4h session</span>
                 </div>
                 
                 <div className="patient-profile-snippet">
@@ -322,10 +608,15 @@ const Dashboard = () => {
                 </div>
 
                 <div className="sched-status-container">
-                  <span className={`status-pill ${item.status?.toLowerCase().replace(' ', '-')}`}>
-                    {item.status === 'Completed' && <CheckCircle2 size={12} />}
-                    {item.status}
-                  </span>
+                  {(() => {
+                    const liveStatus = getLiveStatus(item.time_slot, item.status);
+                    return (
+                      <span className={`status-pill ${liveStatus.toLowerCase().replace(' ', '-')}`}>
+                        {liveStatus === 'Completed' && <CheckCircle2 size={12} />}
+                        {liveStatus}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
             )) : (
@@ -343,7 +634,7 @@ const Dashboard = () => {
             <h2>Quick Actions</h2>
             <div className="actions-grid">
               {quickActions.map((action, idx) => (
-                <button key={idx} className="action-tile">
+                <button key={idx} className={`action-tile tone-${action.tone}`} onClick={() => navigate(action.route)}>
                   <div className="action-icon">{action.icon}</div>
                   <div className="action-label-box">
                     <span className="a-label">{action.label}</span>
@@ -373,11 +664,6 @@ const Dashboard = () => {
             <Activity size={20} className="text-primary" />
             <h2>Machine Monitoring</h2>
           </div>
-          <div className="machine-legend">
-            <span className="leg-item"><span className="dot available"></span> Free</span>
-            <span className="leg-item"><span className="dot busy"></span> Busy</span>
-            <span className="leg-item"><span className="dot hiv"></span> HIV Dedicated</span>
-          </div>
         </div>
         <div className="machine-grid-simple">
           {monitoringMachines.map(m => {
@@ -402,6 +688,12 @@ const Dashboard = () => {
           })}
         </div>
       </section>
+      <SessionReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        appointment={selectedAppointment}
+        onRefresh={fetchData}
+      />
     </div>
   );
 };

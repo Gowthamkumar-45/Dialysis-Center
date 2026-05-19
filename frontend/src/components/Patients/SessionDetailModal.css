@@ -60,8 +60,8 @@
   letter-spacing: 0.05em;
 }
 
-.modal-select, 
-.session-edit-form input, 
+.modal-select,
+.session-edit-form input,
 .session-edit-form textarea {
   width: 100%;
   padding: 0.875rem 1rem;
@@ -74,8 +74,8 @@
   transition: all 0.2s;
 }
 
-.modal-select:focus, 
-.session-edit-form input:focus, 
+.modal-select:focus,
+.session-edit-form input:focus,
 .session-edit-form textarea:focus {
   outline: none;
   border-color: #0ea5e9;
@@ -172,9 +172,23 @@
   font-weight: 700;
 }
 
-.outcome-badge-large.green { background: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; }
-.outcome-badge-large.yellow { background: #fffbeb; color: #d97706; border: 1px solid #fef3c7; }
-.outcome-badge-large.red { background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; }
+.outcome-badge-large.green {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
+}
+
+.outcome-badge-large.yellow {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fef3c7;
+}
+
+.outcome-badge-large.red {
+  background: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+}
 
 .vitals-grid-card {
   display: grid;
@@ -192,9 +206,14 @@
   gap: 12px;
 }
 
-.v-item-card svg { color: #94a3b8; }
+.v-item-card svg {
+  color: #94a3b8;
+}
 
-.v-data { display: flex; flex-direction: column; }
+.v-data {
+  display: flex;
+  flex-direction: column;
+}
 
 .v-l {
   font-size: 0.6rem;
@@ -254,7 +273,8 @@
   font-size: 0.875rem;
 }
 
-.save-btn, .edit-btn-alt {
+.save-btn,
+.edit-btn-alt {
   background: #0ea5e9;
   color: white;
   border: none;
@@ -269,7 +289,8 @@
   font-size: 0.875rem;
 }
 
-.save-btn:hover, .edit-btn-alt:hover {
+.save-btn:hover,
+.edit-btn-alt:hover {
   background: #0284c7;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);

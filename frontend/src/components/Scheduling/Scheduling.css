@@ -39,10 +39,98 @@
   transition: all 0.2s;
 }
 
+.status-pill {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-pill.occupied {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: none;
+  height: auto;
+  min-height: 60px;
+  padding: 0.75rem;
+}
+
+.status-pill.occupied.in-progress {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: none;
+}
+
+.status-pill.occupied.completed {
+  background-color: #f8fafc;
+  color: #b3b7bd;
+  border: none;
+}
+
+.status-content-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.status-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.appt-patient-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.appt-p-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: #64748b;
+  transition: color 0.2s;
+}
+
+.status-pill:hover .appt-p-name,
+.status-pill:hover .appt-p-id {
+  color: inherit;
+}
+
+.appt-p-id {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #94a3b8;
+  transition: color 0.2s;
+}
+
+.status-pill.available {
+  background-color: white;
+  color: #10b981;
+  border: 1.5px solid #dcfce7;
+}
+
 .toggle-btn.active {
   background: white;
   color: #0ea5e9;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .header-left h1 {
@@ -110,7 +198,8 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
-  pointer-events: none; /* Let the label handle the click */
+  pointer-events: none;
+  /* Let the label handle the click */
 }
 
 .add-appointment-btn {
@@ -140,12 +229,13 @@
 
 .grid-header-row {
   display: grid;
-  grid-template-columns: 220px repeat(4, 1fr);
+  grid-template-columns: 220px repeat(2, 1fr);
   background-color: #ffffff;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.machine-col-header, .slot-col-header {
+.machine-col-header,
+.slot-col-header {
   padding: 1.25rem;
   font-size: 0.75rem;
   font-weight: 700;
@@ -163,7 +253,7 @@
 
 .grid-row {
   display: grid;
-  grid-template-columns: 220px repeat(4, 1fr);
+  grid-template-columns: 220px repeat(2, 1fr);
   border-bottom: 1px solid #f1f5f9;
   transition: background 0.2s;
 }
@@ -190,8 +280,21 @@
   border-radius: 0 4px 4px 0;
 }
 
-.machine-info-cell.hiv::before { background-color: #ef4444; }
-.machine-info-cell.standard::before { background-color: #3b82f6; }
+.machine-info-cell.hiv::before {
+  background-color: #ef4444;
+}
+
+.machine-info-cell.hcv::before {
+  background-color: #a855f7;
+}
+
+.machine-info-cell.hiv_hcv::before {
+  background-color: #701a75;
+}
+
+.machine-info-cell.standard::before {
+  background-color: #3b82f6;
+}
 
 .m-text {
   display: flex;
@@ -264,7 +367,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #166534; /* For In Progress */
+  color: #166534;
+  /* For In Progress */
 }
 
 .upcoming .appt-top {
@@ -282,20 +386,25 @@
   padding-left: 22px;
 }
 
-.in-progress .appt-status { color: #166534; }
-.upcoming .appt-status { color: #1e40af; }
+.in-progress .appt-status {
+  color: #166534;
+}
+
+.upcoming .appt-status {
+  color: #1e40af;
+}
 
 /* Daily Standard View (Machines as Rows, Timings as Columns) */
 .grid-header-row.daily-standard {
   display: grid;
-  grid-template-columns: 220px repeat(4, 1fr);
+  grid-template-columns: 220px repeat(2, 1fr);
   background-color: #ffffff;
   border-bottom: 2px solid #f1f5f9;
 }
 
 .grid-row.daily-standard {
   display: grid;
-  grid-template-columns: 220px repeat(4, 1fr);
+  grid-template-columns: 220px repeat(2, 1fr);
   border-bottom: 1px solid #f1f5f9;
   min-height: 80px;
   position: relative;
@@ -303,7 +412,7 @@
 
 .grid-row.daily-standard {
   display: grid;
-  grid-template-columns: 220px repeat(4, 1fr);
+  grid-template-columns: 220px repeat(2, 1fr);
   border-bottom: 1px solid #f1f5f9;
   min-height: 80px;
 }
@@ -315,7 +424,8 @@
   gap: 12px;
   border-right: 1px solid #f1f5f9;
   background-color: #fcfdfe;
-  position: relative; /* For the indicator */
+  position: relative;
+  /* For the indicator */
 }
 
 .machine-info-cell::before {
@@ -339,18 +449,28 @@
   background-color: #ef4444;
 }
 
+.hcv .machine-info-cell::before {
+  background-color: #a855f7;
+}
+
+.hiv_hcv .machine-info-cell::before {
+  background-color: #701a75;
+}
+
 .unit-number-circle {
-  width: 32px;
+  min-width: 32px;
   height: 32px;
+  padding: 0 8px;
   background: #f1f5f9;
-  border-radius: 50%;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   color: #64748b;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   border: 1px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .machine-info-cell {
@@ -370,12 +490,16 @@
   justify-content: center;
 }
 
-.slot-cell:last-child { border-right: none; }
+.slot-cell:last-child {
+  border-right: none;
+}
 
 .status-pill {
   width: 100%;
   max-width: 140px;
-  height: 40px;
+  min-height: 40px;
+  height: auto;
+  padding: 8px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -393,13 +517,15 @@
   border: none;
   cursor: pointer;
   font-weight: 800;
+  font-size: 14px;
 }
 
 .status-pill.available:hover {
-  background: #22c55e;
-  color: white;
+  background: #f0fdf4;
+  color: #22c55e;
+  border: 1px solid #dcfce7;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
 }
 
 .status-pill.available.placeholder {
@@ -412,24 +538,30 @@
 
 .status-pill.unavailable {
   background: transparent;
-  color: #3b82f6;
+  color: #94a3b8;
   border: none;
-  cursor: pointer;
+  cursor: not-allowed;
   font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
   transition: all 0.2s ease;
 }
 
 .status-pill.unavailable:hover {
-  background: #3b82f6;
-  color: white;
-  border-style: solid;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  background: #f1f5f9;
+  color: #64748b;
 }
 
 .status-pill.occupied {
   background: transparent;
-  color: #3b82f6;
+  color: #0ea5e9;
+  font-size: 14px;
+}
+
+.status-pill.occupied:hover {
+  background: #f0f9ff;
+  color: #0ea5e9;
+  border: 1px solid #e0f2fe;
 }
 
 .status-pill.in-progress {
@@ -464,9 +596,20 @@
 }
 
 @keyframes iconPulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .status-pill.out-of-service {
@@ -475,30 +618,35 @@
   border: none;
   cursor: pointer;
   font-weight: 800;
+  font-size: 14px;
   transition: all 0.2s ease;
 }
 
 .status-pill.out-of-service:hover {
-  background: #ef4444;
-  color: white;
+  background: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
 }
 
 .status-pill.maintenance {
   background: transparent;
-  color: #f59e0b; /* Orange */
+  color: #f59e0b;
+  /* Orange */
   border: none;
   cursor: pointer;
   font-weight: 800;
+  font-size: 14px;
   transition: all 0.2s ease;
 }
 
 .status-pill.maintenance:hover {
-  background: #f59e0b;
-  color: white;
+  background: #fff7ed;
+  color: #f59e0b;
+  border: 1px solid #ffedd5;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
 }
 
 .status-pill.offline {
@@ -625,8 +773,15 @@
   margin: 0 auto 1.5rem;
 }
 
-.status-alert-icon.orange { background: #fff7ed; color: #f97316; }
-.status-alert-icon.red { background: #fef2f2; color: #ef4444; }
+.status-alert-icon.orange {
+  background: #fff7ed;
+  color: #f97316;
+}
+
+.status-alert-icon.red {
+  background: #fef2f2;
+  color: #ef4444;
+}
 
 .status-alert-modal h3 {
   font-size: 1.25rem;
@@ -660,11 +815,23 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

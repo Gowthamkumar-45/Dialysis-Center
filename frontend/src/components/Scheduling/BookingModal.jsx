@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, Clock, Monitor, User, Search, Check } from 'lucide-react';
-import { patientService, appointmentService } from '../../services/api';
+import { X, Calendar, Clock, Monitor, User, Search, Check, AlertCircle } from 'lucide-react';
+import { patientService, appointmentService, staffService } from '../../services/api';
 import './BookingModal.css';
 
 const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], appointments = [] }) => {
@@ -13,6 +13,8 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(slotData?.slotLabel || '');
   const [attendingStaff, setAttendingStaff] = useState('');
   const [selectedStaff, setSelectedStaff] = useState('');
+  const [selectedStaffId, setSelectedStaffId] = useState(null);
+  const [allStaff, setAllStaff] = useState([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isMachineDropdownOpen, setIsMachineDropdownOpen] = useState(false);
@@ -20,21 +22,38 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
   const machineDropdownRef = useRef(null);
 
   const timeSlots = [
-    '08:00 AM - 11:00 AM',
-    '11:30 AM - 02:30 PM',
-    '03:00 PM - 06:00 PM',
-    '06:30 PM - 09:30 PM'
+    '07:30 AM - 11:30 AM',
+    '12:00 PM - 04:00 PM'
   ];
 
   useEffect(() => {
     if (isOpen) {
       fetchPatients();
+      fetchStaff();
       if (slotData) {
         setSelectedDate(slotData.date);
-        setSelectedMachine(slotData.machineId);
+        setSelectedMachine(String(slotData.machineId));
         setSelectedTimeSlot(slotData.slotLabel);
-        setAttendingStaff('');
-        setSelectedStaff('');
+        
+        if (slotData.editMode && slotData.appointment) {
+          const appt = slotData.appointment;
+          setSelectedPatient({
+            id: appt.patient,
+            full_name: appt.patient_name,
+            patient_id: appt.patient_id_label || '?',
+            hiv_status: appt.is_hiv,
+            hepatitis_c: appt.is_hcv
+          });
+          setAttendingStaff(appt.attending_staff || '');
+          setSelectedStaff(appt.attending_staff || '');
+          setSelectedStaffId(appt.staff || null);
+        } else {
+          setSelectedPatient(null);
+          setSearch('');
+          setAttendingStaff('');
+          setSelectedStaff('');
+          setSelectedStaffId(null);
+        }
         setStep(1);
       } else {
         setStep(1);
@@ -45,11 +64,25 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
         setSelectedTimeSlot('');
         setAttendingStaff('');
         setSelectedStaff('');
+        setSelectedStaffId(null);
       }
       setSuccess(false);
       setIsMachineDropdownOpen(false);
     }
   }, [isOpen, slotData]);
+
+  // Auto-link staff ID if name matches exactly
+  useEffect(() => {
+    if (attendingStaff && allStaff.length > 0 && !selectedStaffId) {
+      const match = allStaff.find(s => 
+        (s.name || '').toLowerCase() === attendingStaff.toLowerCase() ||
+        (`${s.first_name} ${s.last_name}`).toLowerCase() === attendingStaff.toLowerCase()
+      );
+      if (match) {
+        setSelectedStaffId(match.id);
+      }
+    }
+  }, [attendingStaff, allStaff, selectedStaffId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -61,6 +94,15 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const fetchStaff = async () => {
+    try {
+      const response = await staffService.getAll();
+      setAllStaff(response.data);
+    } catch (error) {
+      console.error('Error fetching staff:', error);
+    }
+  };
+
   const fetchPatients = async () => {
     try {
       const response = await patientService.getAll();
@@ -71,12 +113,13 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
   };
 
   const getSlotAvailability = (slotLabel) => {
-    // If no machines found in the system yet
     if (!machines || machines.length === 0) return { booked: 0, total: 0, available: -1 };
-
+    
+    // In edit mode, we don't count the current appointment as a conflict
     const bookedCount = appointments.filter(a =>
       a.date === selectedDate &&
-      a.time_slot === slotLabel
+      a.time_slot === slotLabel &&
+      (!slotData?.editMode || a.id !== slotData?.appointment?.id)
     ).length;
 
     return {
@@ -86,58 +129,124 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
     };
   };
 
-
-
   const filteredPatients = patients.filter(p =>
     p.full_name.toLowerCase().includes(search.toLowerCase()) ||
     p.patient_id.toLowerCase().includes(search.toLowerCase())
   );
 
+  const checkCompatibility = (patient, machineId) => {
+    if (!patient || !machineId) return { compatible: true };
+    const machine = machines.find(m => m.id === parseInt(machineId));
+    if (!machine) return { compatible: true };
+
+    const isPatientHiv = !!patient.hiv_status;
+    const isPatientHcv = !!patient.hepatitis_c;
+    const machineType = machine.type;
+
+    if (isPatientHiv) {
+      if (machineType === 'HIV' || machineType === 'HIV_HCV') return { compatible: true };
+      return { compatible: false, message: 'HIV+ patient requires an HIV-dedicated machine.' };
+    }
+
+    if (isPatientHcv) {
+      if (machineType === 'HCV' || machineType === 'HIV_HCV') return { compatible: true };
+      return { compatible: false, message: 'HCV+ patient requires an HCV-dedicated machine.' };
+    }
+
+    if (machineType !== 'Standard') {
+      return { compatible: false, message: 'Standard patient cannot use HIV/HCV dedicated machines.' };
+    }
+
+    return { compatible: true };
+  };
+
+  const [error, setError] = useState(null);
+
   const handleBook = async () => {
+    if (!selectedPatient || !selectedMachine || !selectedDate || !selectedTimeSlot) {
+      setError('Please complete patient, machine, date and time slot before confirming.');
+      return;
+    }
+
+    const { compatible, message } = checkCompatibility(selectedPatient, selectedMachine);
+    if (!compatible) {
+      setError(message || 'Selected machine is not compatible with this patient.');
+      return;
+    }
+
+    setError(null);
     setLoading(true);
     try {
       const bookingData = {
         patient: selectedPatient.id,
-        machine: selectedMachine,
+        machine: parseInt(selectedMachine, 10),
         date: selectedDate,
         time_slot: selectedTimeSlot,
+        staff: selectedStaffId,
         attending_staff: attendingStaff,
         status: 'Upcoming'
       };
 
-      await appointmentService.create(bookingData);
+      if (slotData?.editMode && slotData.appointment) {
+        await appointmentService.update(slotData.appointment.id, bookingData);
+      } else {
+        await appointmentService.create(bookingData);
+      }
+
       setSuccess(true);
       onRefresh();
-      // Auto close after 2 seconds on success
       setTimeout(() => {
         onClose();
         setStep(1);
       }, 3000);
-    } catch (error) {
-      console.error('Error booking session:', error);
-      alert('Failed to book session. Please check availability.');
+    } catch (err) {
+      console.error('Error booking session:', err);
+      const data = err.response?.data;
+      const flatten = (val) => Array.isArray(val) ? val.join(' ') : val;
+      let msg;
+      if (data) {
+        if (data.patient) msg = flatten(data.patient);
+        else if (data.non_field_errors) msg = flatten(data.non_field_errors);
+        else if (data.detail) msg = flatten(data.detail);
+        else if (typeof data === 'object') {
+          msg = Object.entries(data).map(([k, v]) => `${k}: ${flatten(v)}`).join(' • ');
+        }
+      }
+      setError(msg || 'Failed to book session. Please check machine availability or try a different slot.');
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) setError(null);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={() => dateInputRef.current?.blur()}>
-      <div
-        className={`booking-modal-content animate-pop ${success ? 'success-mode' : ''}`}
-        onClick={() => dateInputRef.current?.blur()}
-      >
+      <div className={`booking-modal-content animate-pop ${success ? 'success-mode' : ''}`} onClick={() => dateInputRef.current?.blur()}>
         {!success ? (
           <>
             <header className="booking-header">
-              <div className="title-area">
-                <h2>Book Dialysis Session</h2>
-                <div className="step-indicator">Step {step} of 3</div>
+              <div className="header-title">
+                <Calendar size={20} color="#0ea5e9" />
+                <h2>{slotData?.editMode ? 'Edit Session Allocation' : 'New Session Allocation'}</h2>
               </div>
-              <button className="close-btn-round" onClick={onClose}><X size={20} /></button>
+              <button className="close-modal-btn" onClick={onClose}><X size={20} /></button>
             </header>
+
+            {error && (
+              <div className="error-alert-banner animate-fade-in" style={{ margin: '0 2rem 1rem' }}>
+                <AlertCircle size={20} />
+                <div className="error-text-box">
+                  <strong>Action Required</strong>
+                  <p>{error}</p>
+                </div>
+                <button className="error-close-btn" onClick={() => setError(null)}><X size={16} /></button>
+              </div>
+            )}
 
             <div className="booking-body">
               {step === 1 && (
@@ -214,14 +323,16 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
                       {isMachineDropdownOpen && (
                         <div className="machine-options-list animate-fade-in">
                           {machines.map(m => {
-                            const isUnavailable = m.status === 'Maintenance' || m.status === 'Out of Service';
+                            const isOutOfService = m.status === 'Maintenance' || m.status === 'Out of Service';
+                            const { compatible, message } = checkCompatibility(selectedPatient, m.id);
+                            
                             return (
                               <div 
                                 key={m.id} 
-                                className={`machine-option-item ${selectedMachine === String(m.id) ? 'selected' : ''} ${isUnavailable ? 'disabled' : ''}`}
+                                className={`machine-option-item ${selectedMachine === String(m.id) ? 'selected' : ''} ${isOutOfService ? 'disabled' : ''} ${!compatible ? 'mismatch' : ''}`}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  if (!isUnavailable) {
+                                  if (!isOutOfService) {
                                     setSelectedMachine(String(m.id));
                                     setIsMachineDropdownOpen(false);
                                   }
@@ -232,10 +343,12 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
                                   <span className="m-name">Unit {m.unit_number}</span>
                                   <span className="m-type">({m.type})</span>
                                 </div>
-                                {isUnavailable && (
+                                {isOutOfService ? (
                                   <span className={`status-badge ${m.status.toLowerCase().replace(/\s+/g, '-')}`}>
                                     {m.status}
                                   </span>
+                                ) : (selectedPatient && !compatible) && (
+                                  <span className="status-badge incompatible" title={message}>Incompatible</span>
                                 )}
                               </div>
                             );
@@ -255,28 +368,36 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
                         value={attendingStaff}
                         onChange={(e) => {
                           setAttendingStaff(e.target.value);
-                          setSelectedStaff(''); // clear so dropdown re-appears
+                          setSelectedStaff('');
                         }}
                       />
                     </div>
                     {attendingStaff && !selectedStaff && (
                       <div className="staff-dropdown animate-fade-in">
-                        {['Dr. Sarah Wilson', 'Dr. James Miller', 'RN Mark Thompson', 'RN Elena Cruz', 'RN Priya Sharma', 'Tech David Chen']
-                          .filter(s => s.toLowerCase().includes(attendingStaff.toLowerCase()))
-                          .map(staff => (
-                            <div
-                              key={staff}
-                              className="staff-option"
-                              onClick={() => {
-                                setAttendingStaff(staff);
-                                setSelectedStaff(staff);
-                              }}
-                            >
-                              <User size={14} />
-                              <span>{staff}</span>
-                            </div>
-                          ))
+                        {allStaff
+                          .filter(s => (s.name || '').toLowerCase().includes(attendingStaff.toLowerCase()) || 
+                                       (`${s.first_name} ${s.last_name}`).toLowerCase().includes(attendingStaff.toLowerCase()))
+                          .map(staff => {
+                            const displayName = staff.name || `${staff.first_name} ${staff.last_name}`;
+                            return (
+                              <div key={staff.id} 
+                                className="staff-option" 
+                                onClick={() => { 
+                                  setAttendingStaff(displayName); 
+                                  setSelectedStaff(displayName); 
+                                  setSelectedStaffId(staff.id);
+                                }}
+                              >
+                                <User size={14} />
+                                <span>{displayName} <small style={{ opacity: 0.6, fontSize: '0.7em' }}>({staff.role})</small></span>
+                              </div>
+                            );
+                          })
                         }
+                        {allStaff.filter(s => (s.name || '').toLowerCase().includes(attendingStaff.toLowerCase()) || 
+                                              (`${s.first_name} ${s.last_name}`).toLowerCase().includes(attendingStaff.toLowerCase())).length === 0 && (
+                          <div className="staff-option disabled">No staff found</div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -334,7 +455,6 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
                           const availability = getSlotAvailability(slot);
                           const isFull = availability.available === 0;
                           const isChecking = availability.available === -1;
-
                           return (
                             <div
                               key={slot}
@@ -368,12 +488,21 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
                     </div>
                     <div className="summary-row">
                       <span>Attending Staff:</span>
-                      <strong>{attendingStaff}</strong>
+                      <strong>{attendingStaff || '—'}</strong>
                     </div>
                     <div className="summary-row">
                       <span>Schedule:</span>
                       <strong>{selectedDate} • {selectedTimeSlot}</strong>
                     </div>
+                    {(() => {
+                      const compat = checkCompatibility(selectedPatient, selectedMachine);
+                      return !compat.compatible ? (
+                        <div style={{ background: '#fef2f2', color: '#ef4444', padding: '0.75rem 1rem', borderRadius: '8px', marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <AlertCircle size={16} />
+                          <strong>{compat.message}</strong>
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               )}
@@ -388,7 +517,7 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
                 {step < 3 ? (
                   <button
                     className="confirm-book-btn"
-                    disabled={step === 1 ? !selectedPatient : step === 2 ? (!selectedDate || !selectedTimeSlot) : false}
+                    disabled={step === 1 ? (!selectedPatient || !selectedMachine) : step === 2 ? (!selectedDate || !selectedTimeSlot) : false}
                     onClick={() => setStep(step + 1)}
                   >
                     Next Step
@@ -396,7 +525,14 @@ const BookingModal = ({ isOpen, onClose, slotData, onRefresh, machines = [], app
                 ) : (
                   <button
                     className="confirm-book-btn"
-                    disabled={!selectedMachine || loading}
+                    disabled={
+                      !selectedMachine ||
+                      !selectedPatient ||
+                      !selectedDate ||
+                      !selectedTimeSlot ||
+                      loading ||
+                      !checkCompatibility(selectedPatient, selectedMachine).compatible
+                    }
                     onClick={handleBook}
                   >
                     {loading ? 'Confirming...' : 'Confirm Allocation'}

@@ -57,14 +57,14 @@ const SessionDetailModal = ({ isOpen, onClose, session, onRefresh, isEditMode = 
   const handleSave = async () => {
     try {
       setLoading(true);
-      
+
       // Clean up numeric fields to prevent 400 Bad Request
       const cleanedData = {
         ...formData,
         post_weight: formData.post_weight === '' ? null : parseFloat(formData.post_weight),
         fluid_removed: formData.fluid_removed === '' ? null : parseFloat(formData.fluid_removed),
-        status_color: formData.outcome === 'Optimal' ? 'green' : 
-                      (formData.outcome === 'Critical' || formData.outcome === 'Bleeding') ? 'red' : 'yellow'
+        status_color: formData.outcome === 'Optimal' ? 'green' :
+          (formData.outcome === 'Critical' || formData.outcome === 'Bleeding') ? 'red' : 'yellow'
       };
 
       await treatmentSessionService.update(session.id, cleanedData);
@@ -98,7 +98,7 @@ const SessionDetailModal = ({ isOpen, onClose, session, onRefresh, isEditMode = 
               <div className="form-section">
                 <div className="form-group full-width">
                   <label><User size={16} /> Staff In-Charge</label>
-                  <select 
+                  <select
                     name="staff"
                     value={formData.staff}
                     onChange={handleInputChange}
@@ -252,7 +252,7 @@ const SessionDetailModal = ({ isOpen, onClose, session, onRefresh, isEditMode = 
                   </div>
                   <div className="sec-content">{session.medications_given || 'No medications recorded for this session.'}</div>
                 </div>
-                
+
                 <div className="section-card">
                   <div className="sec-header">
                     <AlertCircle size={16} />

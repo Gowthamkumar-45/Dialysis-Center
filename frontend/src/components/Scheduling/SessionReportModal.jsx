@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Activity, Heart, Weight, AlertCircle, CheckCircle, User } from 'lucide-react';
-import { appointmentService, patientService, treatmentSessionService, staffService } from '../../services/api';
+import { X, Save, Activity, Heart, Weight, AlertCircle, CheckCircle, User, Plus, Trash2, Package, Search } from 'lucide-react';
+import { appointmentService, patientService, treatmentSessionService, staffService, inventoryService } from '../../services/api';
 import './SessionReportModal.css';
 
 const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
@@ -17,17 +17,24 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
     notes: ''
   });
   const [staffMembers, setStaffMembers] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [selectedConsumables, setSelectedConsumables] = useState([]);
+  const [itemSearch, setItemSearch] = useState('');
 
   useEffect(() => {
-    const fetchStaff = async () => {
+    const fetchData = async () => {
       try {
-        const response = await staffService.getAll();
-        setStaffMembers(response.data);
+        const [staffRes, invRes] = await Promise.all([
+          staffService.getAll(),
+          inventoryService.getAll()
+        ]);
+        setStaffMembers(staffRes.data);
+        setInventoryItems(invRes.data);
       } catch (error) {
-        console.error('Error fetching staff members:', error);
+        console.error('Error fetching modal data:', error);
       }
     };
-    fetchStaff();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -44,6 +51,7 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
         outcome: appointment.outcome || 'Optimal',
         notes: appointment.notes || ''
       });
+      setSelectedConsumables([]);
     }
   }, [appointment, isOpen]);
 
@@ -52,30 +60,51 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const addConsumable = (item) => {
+    const existing = selectedConsumables.find(c => c.item === item.id);
+    if (existing) {
+      setSelectedConsumables(selectedConsumables.map(c => 
+        c.item === item.id ? { ...c, quantity: c.quantity + 1 } : c
+      ));
+    } else {
+      setSelectedConsumables([...selectedConsumables, { item: item.id, name: item.name, quantity: 1, unit: item.unit }]);
+    }
+    setItemSearch('');
+  };
+
+  const updateConsumableQty = (itemId, delta) => {
+    setSelectedConsumables(selectedConsumables.map(c => {
+      if (c.item === itemId) {
+        const newQty = Math.max(1, c.quantity + delta);
+        return { ...c, quantity: newQty };
+      }
+      return c;
+    }));
+  };
+
+  const removeConsumable = (itemId) => {
+    setSelectedConsumables(selectedConsumables.filter(c => c.item !== itemId));
+  };
+
   const handleComplete = async () => {
     try {
       setLoading(true);
-      // Update appointment status and clinical data
       await appointmentService.update(appointment.id, {
         ...formData,
         status: 'Completed'
       });
 
-      // Determine the best staff name to record
       const finalStaffName = formData.attending_staff || appointment.staff_name || 'Medical Staff';
-
-      // Safely parse numeric values to avoid NaN errors
       const safePostWeight = formData.post_weight ? parseFloat(formData.post_weight) : null;
       const safeFluidRemoved = formData.fluid_removed ? parseFloat(formData.fluid_removed) : null;
 
-      // Create a permanent Treatment Session record for history
-      await treatmentSessionService.create({
+      const sessionPayload = {
         patient: appointment.patient,
         machine: `Unit ${appointment.machine_unit || 'Unknown'}`,
         staff: finalStaffName,
         date: appointment.date,
         time: appointment.time_slot.split(' - ')[0],
-        duration: "4h 00m", // Standard duration
+        duration: "4h 00m",
         post_weight: safePostWeight,
         post_bp: formData.post_bp,
         fluid_removed: safeFluidRemoved,
@@ -84,10 +113,13 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
         complications: formData.complications || formData.outcome,
         outcome: formData.outcome,
         status_color: formData.outcome === 'Optimal' ? 'green' : 
-                      (formData.outcome === 'Critical' || formData.outcome === 'Bleeding') ? 'red' : 'yellow'
-      });
+                      (formData.outcome === 'Critical' || formData.outcome === 'Bleeding') ? 'red' : 'yellow',
+        notes: formData.notes,
+        consumables: selectedConsumables.map(({ item, quantity }) => ({ item, quantity }))
+      };
       
-      // Optionally update patient's latest vitals
+      await treatmentSessionService.create(sessionPayload);
+      
       if (formData.post_weight || formData.post_bp) {
         await patientService.update(appointment.patient, {
           current_weight: formData.post_weight || undefined,
@@ -110,15 +142,29 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
   return (
     <div className="modal-overlay">
       <div className="modal-content session-report-modal animate-pop">
-        <header className="modal-header">
+        <header className="modal-header report-header">
           <div className="header-title">
             <h2>Post-Dialysis Report</h2>
-            <p>Patient: {appointment.patient_name} • Unit {appointment.machine_unit} • {appointment.time_slot}</p>
           </div>
           <button className="close-btn" onClick={onClose}><X size={20} /></button>
         </header>
 
         <div className="modal-body">
+          <div className="report-info-bar">
+            <div className="info-item">
+              <span className="info-label">Patient</span>
+              <span className="info-value">{appointment.patient_name}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Unit</span>
+              <span className="info-value">#{appointment.machine_unit}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Session Slot</span>
+              <span className="info-value">{appointment.time_slot}</span>
+            </div>
+          </div>
+
           <div className="report-vitals-grid">
             <div className="form-group full-width" style={{ gridColumn: 'span 2' }}>
               <label><User size={16} /> Attended Name</label>
@@ -206,14 +252,74 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
             </div>
           </div>
 
-          <div className="form-row">
+          <div className="report-section-title">
+            <Package size={18} /> Consumables & Medications Used
+          </div>
+          
+          <div className="consumables-search-wrapper">
+            <div className="search-input-group">
+              <Search size={16} />
+              <input 
+                type="text" 
+                placeholder="Search items used (e.g. Dialyzer, Heparin)..." 
+                value={itemSearch}
+                onChange={(e) => setItemSearch(e.target.value)}
+              />
+            </div>
+            
+            {itemSearch && (
+              <div className="search-results-dropdown shadow-lg">
+                {inventoryItems
+                  .filter(item => 
+                    item.name.toLowerCase().includes(itemSearch.toLowerCase()) ||
+                    item.item_code.toLowerCase().includes(itemSearch.toLowerCase())
+                  )
+                  .slice(0, 5)
+                  .map(item => (
+                    <button key={item.id} className="search-result-item" onClick={() => addConsumable(item)}>
+                      <div className="item-info">
+                        <span className="item-name">{item.name}</span>
+                        <span className="item-code">{item.item_code}</span>
+                      </div>
+                      <span className="item-stock">{item.stock} {item.unit} left</span>
+                      <Plus size={14} />
+                    </button>
+                  ))
+                }
+              </div>
+            )}
+          </div>
+
+          <div className="selected-consumables-list">
+            {selectedConsumables.length === 0 ? (
+              <div className="empty-consumables">
+                No items selected. Use the search box above to add items used during this session.
+              </div>
+            ) : (
+              selectedConsumables.map(c => (
+                <div key={c.item} className="selected-item-row animate-slide-in">
+                  <span className="item-name">{c.name}</span>
+                  <div className="qty-controls">
+                    <button onClick={() => updateConsumableQty(c.item, -1)}>-</button>
+                    <span className="qty-value">{c.quantity} {c.unit}</span>
+                    <button onClick={() => updateConsumableQty(c.item, 1)}>+</button>
+                  </div>
+                  <button className="remove-btn" onClick={() => removeConsumable(c.item)}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="form-row mt-4">
             <div className="form-group full-width">
-              <label>Medications Administered (During Session)</label>
+              <label>Additional Medication Notes</label>
               <textarea 
                 name="medications_given"
                 value={formData.medications_given}
                 onChange={handleInputChange}
-                placeholder="List medications, dosage, and time..."
+                placeholder="Additional details about medications or dosage..."
                 rows="2"
               ></textarea>
             </div>
@@ -251,9 +357,9 @@ const SessionReportModal = ({ isOpen, onClose, appointment, onRefresh }) => {
           </div>
         </div>
 
-        <footer className="modal-footer">
-          <button className="cancel-btn" onClick={onClose}>Cancel</button>
-          <button className="save-btn complete-btn" onClick={handleComplete} disabled={loading}>
+        <footer className="modal-footer report-footer">
+          <button className="cancel-btn-alt" onClick={onClose}>Cancel</button>
+          <button className="save-btn complete-btn-large" onClick={handleComplete} disabled={loading}>
             {loading ? 'Processing...' : (
               <>
                 <Save size={18} />

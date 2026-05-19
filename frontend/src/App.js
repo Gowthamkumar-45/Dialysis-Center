@@ -7,29 +7,56 @@ import PatientProfile from './components/Patients/PatientProfile';
 import Scheduling from './components/Scheduling/Scheduling';
 import Machines from './components/Machines/Machines';
 import Staff from './components/Staff/Staff';
+import StaffProfile from './components/Staff/StaffProfile';
+import MachineProfile from './components/Machines/MachineProfile';
 import Inventory from './components/Inventory/Inventory';
 import Billing from './components/Billing/Billing';
+import Attendance from './components/Attendance/Attendance';
+import Login from './components/Login/Login';
+import UserManagement from './components/Users/UserManagement';
+import History from './components/History/History';
+import Notifications from './components/Notifications/Notifications';
+import ProtectedRoute from './components/Login/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 function App() {
   return (
-    <Router>
-      <Layout>
+    <AuthProvider>
+      <Router>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/patients" element={<Patients />} />
-          <Route path="/patients/:id" element={<PatientProfile />} />
-          <Route path="/machines" element={<Machines />} />
-          <Route path="/sessions" element={<Scheduling />} />
-          <Route path="/staff" element={<Staff />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/compliance" element={<div className="p-10 text-center"><h1>Compliance & Audit Logs</h1><p>Module integration in progress...</p></div>} />
-          <Route path="/notifications" element={<div className="p-10 text-center"><h1>Notifications Center</h1><p>Module integration in progress...</p></div>} />
-          <Route path="/settings" element={<div className="p-10 text-center"><h1>System Settings</h1><p>Module integration in progress...</p></div>} />
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+
+          {/* Protected app */}
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/patients" element={<Patients />} />
+                    <Route path="/patients/:id" element={<PatientProfile />} />
+                    <Route path="/machines" element={<Machines />} />
+                    <Route path="/machines/:id" element={<MachineProfile />} />
+                    <Route path="/sessions" element={<Scheduling />} />
+                    <Route path="/staff" element={<Staff />} />
+                    <Route path="/staff/:id" element={<StaffProfile />} />
+                    <Route path="/attendance" element={<Attendance />} />
+                    <Route path="/inventory" element={<Inventory />} />
+                    <Route path="/billing" element={<Billing />} />
+                    <Route path="/users" element={<UserManagement />} />
+                    <Route path="/history" element={<History />} />
+                    <Route path="/notifications" element={<Notifications />} />
+                  </Routes>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
-      </Layout>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 

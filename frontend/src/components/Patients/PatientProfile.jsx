@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  User, Mail, Calendar, Heart, Weight, Activity, 
+import { useParams } from 'react-router-dom';
+import {
+  User, Mail, Calendar, Heart, Weight, Activity,
   Thermometer, AlertCircle, CheckCircle, MoreHorizontal,
   Edit, History as HistoryIcon, MessageSquare, Shield,
   FileText, FileText as ReportIcon, Eye, Edit2, Phone
 } from 'lucide-react';
-import { patientService, appointmentService, treatmentSessionService } from '../../services/api';
+import { patientService, appointmentService, treatmentSessionService, getFullImageUrl } from '../../services/api';
 import PatientModal from './PatientModal';
 import SessionReportModal from '../Scheduling/SessionReportModal';
 import SessionDetailModal from './SessionDetailModal';
@@ -41,9 +41,9 @@ const PatientProfile = () => {
         const patientAppts = apptsRes.data
           .filter(a => String(a.patient) === String(id))
           .sort((a, b) => new Date(b.date) - new Date(a.date));
-        
+
         const pendingAppt = patientAppts.find(a => a.status === 'Upcoming' || a.status === 'Scheduled' || a.status === 'In Progress');
-        
+
         if (pendingAppt) {
           setLatestAppointment(pendingAppt);
         } else {
@@ -58,7 +58,7 @@ const PatientProfile = () => {
             return b.id - a.id;
           })
           .slice(0, 5);
-        
+
         historyData = patientSessions.map(s => ({
           ...s,
           date: new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
@@ -67,7 +67,7 @@ const PatientProfile = () => {
       } catch (err) {
         console.error("Error fetching related data for profile:", err);
       }
-      
+
       const combinedData = {
         ...data,
         age: data.age || 'N/A',
@@ -78,12 +78,12 @@ const PatientProfile = () => {
         emergency_phone: data.contact_person_1_phone || '',
         diagnosis: data.primary_diagnosis || 'CKD Patient',
         diagnosis_secondary: data.notes || '',
-        dialysis_start: data.dialysis_commenced_on ? 
+        dialysis_start: data.dialysis_commenced_on ?
           new Date(data.dialysis_commenced_on).toLocaleDateString('en-GB', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
-          }) : 'N/A', 
+          }) : 'N/A',
         frequency: data.dialysis_frequency || 'Scheduled as per plan',
         vascular_access: data.vascular_access || 'Not Set',
         vitals: {
@@ -152,14 +152,19 @@ const PatientProfile = () => {
       <div className="profile-container-inner">
         {/* Left Patient Card */}
         <aside className="patient-card-sidebar">
-          <h1 className="profile-title sidebar-title">Patient Profile</h1>
           <div className="sidebar-card">
             <div className="p-image-area">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200" alt="Avatar" />
+              {patient.patient_photo ? (
+                <img src={getFullImageUrl(patient.patient_photo)} alt={patient.full_name} />
+              ) : (
+                <div className="p-image-placeholder">
+                  <User size={64} color="#94a3b8" />
+                </div>
+              )}
             </div>
             <h2 className="p-name">{patient.full_name}</h2>
             <div className="p-id-label">ID: {patient.patient_id}</div>
-            
+
             <div className="p-mini-stats">
               <div className="mini-stat">
                 <span className="label">RELATION</span>
@@ -204,18 +209,27 @@ const PatientProfile = () => {
                 {patient.hiv_status && (
                   <span className="tag-pill orange">HIV Positive</span>
                 )}
-                <span className="tag-pill green">{patient.status} Case</span>
+                <div className="profile-badge-group">
+                  <span className={`status-badge ${patient.status?.toLowerCase()}`}>
+                    {patient.status || 'Active'}
+                  </span>
+                  {patient.status !== 'Active' && patient.status_remarks && (
+                    <span className="status-remarks-badge">
+                      Note: {patient.status_remarks}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="header-actions-row">
               <button className="btn-action-text" onClick={() => setIsEditModalOpen(true)}>
                 <Edit size={16} /> Edit Details
               </button>
-              <button 
-                className="btn-action-text" 
+              <button
+                className="btn-action-text"
                 onClick={() => setIsReportModalOpen(true)}
                 disabled={!latestAppointment}
-                title={!latestAppointment ? "No appointments found" : "Add post-dialysis report"}
+                title={!latestAppointment ? "Cannot add report: No active or upcoming session booked for this patient" : "Add post-dialysis report for current session"}
               >
                 <ReportIcon size={16} /> Add Post-Report
               </button>
@@ -225,8 +239,8 @@ const PatientProfile = () => {
 
           <nav className="profile-tabs-nav">
             {['Summary', 'History', 'Socio-Economic', 'Medical', 'Registration'].map(tab => (
-              <button 
-                key={tab} 
+              <button
+                key={tab}
                 className={`tab-item ${activeTab === tab ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -276,10 +290,50 @@ const PatientProfile = () => {
                 </div>
               </div>
             </div>
+
+            {/* Second Row of Insights */}
+            <div className="v-card">
+              <div className="v-icon-box orange"><Weight size={18} /></div>
+              <div className="v-data">
+                <span className="v-label">DRY WEIGHT</span>
+                <div className="v-val-group">
+                  <span className="v-val">{patient.dry_weight || '0.0'}</span>
+                  <span className="v-unit">kg</span>
+                </div>
+              </div>
+            </div>
+            <div className="v-card">
+              <div className="v-icon-box red"><Shield size={18} /></div>
+              <div className="v-data">
+                <span className="v-label">BLOOD TYPE</span>
+                <div className="v-val-group">
+                  <span className="v-val">{patient.blood_group}</span>
+                </div>
+              </div>
+            </div>
+            <div className="v-card">
+              <div className="v-icon-box blue"><AlertCircle size={18} /></div>
+              <div className="v-data">
+                <span className="v-label">HEPATITIS</span>
+                <div className="v-val-group">
+                  <span className="v-val" style={{ fontSize: '0.75rem' }}>
+                    {patient.hepatitis_b ? 'B+' : ''} {patient.hepatitis_c ? 'C+' : ''} {(!patient.hepatitis_b && !patient.hepatitis_c) ? 'Negative' : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="v-card">
+              <div className="v-icon-box teal"><HistoryIcon size={18} /></div>
+              <div className="v-data">
+                <span className="v-label">FREQUENCY</span>
+                <div className="v-val-group">
+                  <span className="v-val" style={{ fontSize: '0.8rem' }}>{patient.frequency}</span>
+                </div>
+              </div>
+            </div>
           </section>
 
-          {activeTab === 'Summary' && (
-            <div className="clinical-grid">
+          {activeTab === 'Summary' && (            <div className="clinical-grid">
               <div className="diagnosis-card">
                 <div className="card-header-inner">
                   <Shield size={18} className="icon-blue" />
@@ -290,6 +344,14 @@ const PatientProfile = () => {
                   <span className="diag-sub">{patient.diagnosis_secondary}</span>
                 </div>
                 <div className="diag-info-grid">
+                  <div className="diag-item">
+                    <span className="l">Primary Clinician:</span>
+                    <span className="v">{patient.primary_clinician || 'Not Assigned'}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">Vascular Access:</span>
+                    <span className="v">{patient.vascular_access || 'Not Set'}</span>
+                  </div>
                   <div className="diag-item">
                     <span className="l">Dialysis Commenced:</span>
                     <span className="v">{patient.dialysis_start}</span>
@@ -305,10 +367,6 @@ const PatientProfile = () => {
                   <div className="diag-item">
                     <span className="l">CKD Stage V:</span>
                     <span className="v">{patient.ckd_stage_v ? 'Yes' : 'No'}</span>
-                  </div>
-                  <div className="diag-item">
-                    <span className="l">Address:</span>
-                    <span className="v">{patient.address}</span>
                   </div>
                 </div>
               </div>
@@ -335,6 +393,82 @@ const PatientProfile = () => {
                       <span>No critical alerts recorded.</span>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* New Identity Card */}
+              <div className="diagnosis-card">
+                <div className="card-header-inner">
+                  <FileText size={18} className="icon-blue" />
+                  <h3>Identity & Documents</h3>
+                </div>
+                <div className="diag-info-grid">
+                  <div className="diag-item">
+                    <span className="l">Aadhar Number:</span>
+                    <span className="v">{patient.aadhar_number || 'Not Linked'}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">Ration Number:</span>
+                    <span className="v">{patient.ration_number || 'Not Linked'}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">CMCHIS Number:</span>
+                    <span className="v">{patient.cmchis_number || 'Not Linked'}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">Registration Date:</span>
+                    <span className="v">{patient.registration_date || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* New Emergency Contact Card */}
+              <div className="diagnosis-card">
+                <div className="card-header-inner">
+                  <User size={18} className="icon-blue" />
+                  <h3>Emergency Contacts</h3>
+                </div>
+                <div className="diag-info-grid">
+                  <div className="diag-item">
+                    <span className="l">Primary Contact:</span>
+                    <span className="v">{patient.contact_person_1_name || 'None'}</span>
+                    <span className="v-text">{patient.contact_person_1_phone}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">Secondary Contact:</span>
+                    <span className="v">{patient.contact_person_2_name || 'None'}</span>
+                    <span className="v-text">{patient.contact_person_2_phone}</span>
+                  </div>
+                  <div className="diag-item full-width">
+                    <span className="l">Residential Address:</span>
+                    <span className="v">{patient.address}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* New Socio-Economic Card */}
+              <div className="diagnosis-card">
+                <div className="card-header-inner">
+                  <User size={18} className="icon-blue" />
+                  <h3>Background & Socio-Economic</h3>
+                </div>
+                <div className="diag-info-grid">
+                  <div className="diag-item">
+                    <span className="l">Education:</span>
+                    <span className="v">{patient.education || 'N/A'}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">Marital Status:</span>
+                    <span className="v">{patient.marital_status || 'N/A'}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">Past Occupation:</span>
+                    <span className="v">{patient.occupation_past || 'N/A'}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">Present Occupation:</span>
+                    <span className="v">{patient.occupation_present || 'N/A'}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -398,6 +532,14 @@ const PatientProfile = () => {
                     <span className="v">{patient.echo || 'N/A'}</span>
                   </div>
                   <div className="diag-item">
+                    <span className="l">SGOT:</span>
+                    <span className="v">{patient.sgot || 'N/A'}</span>
+                  </div>
+                  <div className="diag-item">
+                    <span className="l">SGPT:</span>
+                    <span className="v">{patient.sgpt || 'N/A'}</span>
+                  </div>
+                  <div className="diag-item">
                     <span className="l">Urea:</span>
                     <span className="v">{patient.urea || 'N/A'}</span>
                   </div>
@@ -431,7 +573,7 @@ const PatientProfile = () => {
                     <span className="v">{patient.registration_date || 'N/A'}</span>
                   </div>
                   <div className="diag-item">
-                    <span className="l">Unit Name:</span>
+                    <span className="l">Unit:</span>
                     <span className="v">{patient.unit_name || 'N/A'}</span>
                   </div>
                   <div className="diag-item">
@@ -439,13 +581,15 @@ const PatientProfile = () => {
                     <span className="v">{patient.registration_done_by || 'N/A'}</span>
                   </div>
                 </div>
-                
-                <div className="card-header-inner" style={{marginTop: '2rem'}}>
+              </div>
+
+              <div className="diagnosis-card">
+                <div className="card-header-inner">
                   <User size={18} className="icon-blue" />
                   <h3>Emergency Contacts</h3>
                 </div>
                 <div className="diag-info-grid">
-                  {[1, 2, 3].map(num => (
+                  {[1, 2].map(num => (
                     <div key={num} className="diag-item">
                       <span className="l">Contact {num}:</span>
                       <span className="v">{patient[`contact_person_${num}_name`] || 'N/A'}</span>
@@ -455,20 +599,26 @@ const PatientProfile = () => {
                 </div>
               </div>
 
-              <div className="alerts-card">
+              <div className="diagnosis-card">
                 <div className="card-header-inner">
                   <FileText size={18} className="icon-blue" />
-                  <h3>Identity Commitments</h3>
+                  <h3>Identity & Documents</h3>
                 </div>
-                <div className="commitments-list">
-                  <div className={`commit-item ${patient.has_aadhar ? 'checked' : 'pending'}`}>
-                    <CheckCircle size={16} /> Aadhar Card
+                <div className="diag-info-grid">
+                  <div className="diag-item">
+                    <span className="l">Aadhar Number:</span>
+                    <span className="v">{patient.aadhar_number || 'N/A'}</span>
+                    {patient.aadhar_proof && <a href={patient.aadhar_proof} target="_blank" rel="noreferrer" className="proof-link">View Proof</a>}
                   </div>
-                  <div className={`commit-item ${patient.has_ration ? 'checked' : 'pending'}`}>
-                    <CheckCircle size={16} /> Ration Card
+                  <div className="diag-item">
+                    <span className="l">Ration Number:</span>
+                    <span className="v">{patient.ration_number || 'N/A'}</span>
+                    {patient.ration_proof && <a href={patient.ration_proof} target="_blank" rel="noreferrer" className="proof-link">View Proof</a>}
                   </div>
-                  <div className={`commit-item ${patient.has_cmchis ? 'checked' : 'pending'}`}>
-                    <CheckCircle size={16} /> CMCHIS Card
+                  <div className="diag-item">
+                    <span className="l">CMCHIS Number:</span>
+                    <span className="v">{patient.cmchis_number || 'N/A'}</span>
+                    {patient.cmchis_proof && <a href={patient.cmchis_proof} target="_blank" rel="noreferrer" className="proof-link">View Proof</a>}
                   </div>
                 </div>
               </div>
@@ -484,7 +634,7 @@ const PatientProfile = () => {
                 </div>
                 <button className="btn-more"><MoreHorizontal size={20} /></button>
               </div>
-              
+
               {patient.history.length > 0 ? (
                 <table className="sessions-table">
                   <thead>
@@ -549,7 +699,7 @@ const PatientProfile = () => {
       />
       {/* Session Report Modal */}
       {latestAppointment && (
-        <SessionReportModal 
+        <SessionReportModal
           isOpen={isReportModalOpen}
           onClose={() => setIsReportModalOpen(false)}
           appointment={latestAppointment}

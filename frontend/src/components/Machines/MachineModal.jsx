@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Settings, AlertCircle, Activity } from 'lucide-react';
+import { X, Save, Settings, Tag, Hash, MapPin } from 'lucide-react';
 import { machineService } from '../../services/api';
+import './MachineModal.css';
 
 const MachineModal = ({ isOpen, onClose, onRefresh, machine = null }) => {
   const [formData, setFormData] = useState({
-    unit_number: '',
+    unit: 'kovai',
+    brand: 'Fresenius',
+    model: '4008 S',
+    has_bpm: true,
+    serial_number: '',
     type: 'Standard',
     status: 'In Use',
+    installation_date: '',
+    donated_by: '',
+    warranty_years: 5,
+    amc_from: '',
+    amc_upto: '',
+    running_hours: 0,
+    remarks: '',
     last_service_date: '',
     uptime_percentage: 100
   });
@@ -14,17 +26,39 @@ const MachineModal = ({ isOpen, onClose, onRefresh, machine = null }) => {
   useEffect(() => {
     if (machine && isOpen) {
       setFormData({
-        unit_number: machine.unit_number || '',
+        unit: machine.unit || 'kovai',
+        brand: machine.brand || '',
+        model: machine.model || '',
+        has_bpm: machine.has_bpm ?? true,
+        serial_number: machine.serial_number || '',
         type: machine.type || 'Standard',
-        status: machine.status || 'Available',
+        status: machine.status || 'In Use',
+        installation_date: machine.installation_date || '',
+        donated_by: machine.donated_by || '',
+        warranty_years: machine.warranty_years || 5,
+        amc_from: machine.amc_from || '',
+        amc_upto: machine.amc_upto || '',
+        running_hours: machine.running_hours || 0,
+        remarks: machine.remarks || '',
         last_service_date: machine.last_service_date || '',
         uptime_percentage: machine.uptime_percentage || 100
       });
     } else if (!machine && isOpen) {
       setFormData({
-        unit_number: '',
+        unit: 'kovai',
+        brand: 'Fresenius',
+        model: '4008 S',
+        has_bpm: true,
+        serial_number: '',
         type: 'Standard',
         status: 'In Use',
+        installation_date: '',
+        donated_by: '',
+        warranty_years: 5,
+        amc_from: '',
+        amc_upto: '',
+        running_hours: 0,
+        remarks: '',
         last_service_date: '',
         uptime_percentage: 100
       });
@@ -34,22 +68,27 @@ const MachineModal = ({ isOpen, onClose, onRefresh, machine = null }) => {
   const handleSave = async () => {
     try {
       // Basic validation
-      if (!formData.unit_number || formData.unit_number === '') {
-        alert('Please enter a Unit Number.');
+      if (!formData.unit || formData.unit === '') {
+        alert('Please enter a Unit.');
         return;
       }
 
-      const unitNum = parseInt(formData.unit_number);
-      if (isNaN(unitNum)) {
-        alert('Unit Number must be a valid number.');
-        return;
-      }
+      const derivedUnitNumber =
+        (machine && machine.unit_number) ||
+        (formData.serial_number && formData.serial_number.trim()) ||
+        `${formData.unit}-${Date.now()}`;
 
       const cleanedData = {
         ...formData,
-        unit_number: unitNum,
+        unit: formData.unit.toString(),
+        unit_number: derivedUnitNumber,
         uptime_percentage: parseFloat(formData.uptime_percentage) || 100,
-        last_service_date: formData.last_service_date || null
+        warranty_years: formData.warranty_years === '' ? null : parseInt(formData.warranty_years, 10),
+        running_hours: formData.running_hours === '' ? 0 : parseInt(formData.running_hours, 10),
+        last_service_date: formData.last_service_date || null,
+        amc_from: formData.amc_from || null,
+        amc_upto: formData.amc_upto || null,
+        installation_date: formData.installation_date || null
       };
 
       console.log('Sending machine data to API:', cleanedData);
@@ -83,24 +122,75 @@ const MachineModal = ({ isOpen, onClose, onRefresh, machine = null }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content animate-pop" style={{ maxWidth: '500px' }}>
+      <div className="modal-content animate-pop">
         <header className="modal-header">
           <h2>{machine ? 'Edit Unit' : 'New Dialysis Unit'}</h2>
           <button className="close-btn" onClick={onClose}><X size={20} /></button>
         </header>
 
         <div className="modal-body">
-          <div className="form-grid" style={{ gridTemplateColumns: '1fr' }}>
+          <div className="form-grid">
+              <div className="form-group">
+                <label><MapPin size={16} /> Branch/Unit</label>
+                <input
+                  type="text"
+                  name="unit"
+                  value={formData.unit}
+                  onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                  placeholder="e.g. kovai"
+                />
+              </div>
+              <div className="form-group">
+                <label><Tag size={16} /> Brand</label>
+                <input
+                  type="text"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={e => setFormData({ ...formData, brand: e.target.value })}
+                  placeholder="e.g. Fresenius"
+                />
+              </div>
+              <div className="form-group">
+                <label><Settings size={16} /> Model</label>
+                <input
+                  type="text"
+                  name="model"
+                  value={formData.model}
+                  onChange={e => setFormData({ ...formData, model: e.target.value })}
+                  placeholder="e.g. 4008 S"
+                />
+              </div>
+              <div className="form-group">
+                <label><Hash size={16} /> Serial Number</label>
+                <input
+                  type="text"
+                  name="serial_number"
+                  value={formData.serial_number}
+                  onChange={e => setFormData({ ...formData, serial_number: e.target.value })}
+                  placeholder="Unique ID"
+                />
+              </div>
+
             <div className="form-group">
-              <label>Unit Number</label>
+              <label>BPM Configuration</label>
+              <select 
+                value={formData.has_bpm}
+                onChange={(e) => setFormData({...formData, has_bpm: e.target.value === 'true'})}
+              >
+                <option value="true">With BPM</option>
+                <option value="false">Without BPM</option>
+              </select>
+            </div>
+
+            <div className="form-group">
               <input 
-                type="number" 
-                value={formData.unit_number}
-                onChange={(e) => setFormData({...formData, unit_number: e.target.value})}
-                placeholder="e.g. 01"
+                type="text" 
+                value={formData.serial_number}
+                onChange={(e) => setFormData({...formData, serial_number: e.target.value})}
+                placeholder="e.g. 5SXA5YW1"
               />
             </div>
-            
+
             <div className="form-group">
               <label>Machine Type</label>
               <select 
@@ -109,6 +199,8 @@ const MachineModal = ({ isOpen, onClose, onRefresh, machine = null }) => {
               >
                 <option value="Standard">Standard Unit</option>
                 <option value="HIV">HIV Dedicated Unit</option>
+                <option value="HCV">HCV Dedicated Unit</option>
+                <option value="HIV_HCV">HIV & HCV Dedicated Unit</option>
               </select>
             </div>
 
@@ -125,16 +217,70 @@ const MachineModal = ({ isOpen, onClose, onRefresh, machine = null }) => {
             </div>
 
             <div className="form-group">
-              <label>Date</label>
+              <label>Installation Date</label>
               <input 
                 type="date" 
-                value={formData.last_service_date}
-                onChange={(e) => setFormData({...formData, last_service_date: e.target.value})}
+                value={formData.installation_date}
+                onChange={(e) => setFormData({...formData, installation_date: e.target.value})}
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label>Donated By</label>
+              <input 
+                type="text" 
+                value={formData.donated_by}
+                onChange={(e) => setFormData({...formData, donated_by: e.target.value})}
+                placeholder="Organization or Trust name"
               />
             </div>
 
             <div className="form-group">
-              <label>Uptime Performance (%)</label>
+              <label>Warranty (Years)</label>
+              <input 
+                type="number" 
+                value={formData.warranty_years}
+                onChange={(e) => setFormData({...formData, warranty_years: e.target.value})}
+              />
+            </div>
+            <div className="form-group">
+              <label>Running Hours</label>
+              <input 
+                type="number" 
+                value={formData.running_hours}
+                onChange={(e) => setFormData({...formData, running_hours: e.target.value})}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>AMC From (Optional)</label>
+              <input 
+                type="date" 
+                value={formData.amc_from}
+                onChange={(e) => setFormData({...formData, amc_from: e.target.value})}
+              />
+            </div>
+            <div className="form-group">
+              <label>AMC Upto (Optional)</label>
+              <input 
+                type="date" 
+                value={formData.amc_upto}
+                onChange={(e) => setFormData({...formData, amc_upto: e.target.value})}
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label>Remarks</label>
+              <textarea 
+                value={formData.remarks}
+                onChange={(e) => setFormData({...formData, remarks: e.target.value})}
+                placeholder="Additional notes..."
+                rows="2"
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label>Uptime Performance ({formData.uptime_percentage}%)</label>
               <input 
                 type="range" 
                 min="0" 
@@ -142,9 +288,6 @@ const MachineModal = ({ isOpen, onClose, onRefresh, machine = null }) => {
                 value={formData.uptime_percentage}
                 onChange={(e) => setFormData({...formData, uptime_percentage: e.target.value})}
               />
-              <div style={{ textAlign: 'right', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                {formData.uptime_percentage}%
-              </div>
             </div>
           </div>
         </div>

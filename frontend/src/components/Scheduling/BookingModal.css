@@ -67,19 +67,18 @@
 
 .staff-dropdown {
   position: absolute;
-  top: 100% ;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   background: #ffffff;
-  border: 1.5px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
-  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
-  z-index: 9999;
-  max-height: 130px;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+  max-height: 220px;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding: 6px;
-  animation: dropDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 8px;
+  animation: dropDown 0.2s cubic-bezier(0, 0, 0.2, 1);
 }
 
 @keyframes dropDown {
@@ -91,13 +90,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 14px;
+  padding: 10px 16px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  font-size: 0.875rem;
-  color: #334155;
+  transition: all 0.2s ease;
+  font-size: 0.9375rem;
+  color: #1e293b;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 2px;
   user-select: none;
 }
@@ -107,8 +106,34 @@
 }
 
 .staff-option:hover {
-  background: #eff6ff;
-  color: #2563eb;
+  background: #f0f9ff;
+  color: #0ea5e9;
+  transform: translateX(4px);
+}
+
+.staff-option span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.staff-option small {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid #e2e8f0;
+  margin-left: 12px;
+}
+
+.staff-option:hover small {
+  background: #0ea5e9;
+  color: white;
 }
 
 .staff-option.active-staff {
@@ -287,6 +312,8 @@
 .booking-body {
   padding: 0 2.5rem 1rem 2.5rem;
   min-height: 340px;
+  position: relative;
+  z-index: 20;
 }
 
 .slot-info-summary {
@@ -776,6 +803,8 @@
   background-color: #f8fafc;
   border-top: 1px solid #f1f5f9;
   border-radius: 0 0 28px 28px;
+  position: relative;
+  z-index: 5;
 }
 
 .footer-right {
@@ -916,4 +945,110 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+.status-badge.incompatible {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.machine-option-item.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f8fafc;
+}
+
+.machine-option-item.disabled:hover {
+  background-color: #f8fafc;
+  border-color: transparent;
+}
+
+.compatibility-warning {
+  margin-top: 1rem;
+  padding: 10px 14px;
+  background-color: #fff7ed;
+  border: 1px solid #ffedd5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #c2410c;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.compatibility-warning span {
+  flex: 1;
+}
+
+.animate-pop {
+  animation: pop 0.3s ease-out;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+/* ─── Error Alert Banner ─── */
+.error-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 1rem 1.25rem;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 12px;
+  color: #991b1b;
+  position: relative;
+}
+
+.error-text-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.error-text-box strong {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.error-text-box p {
+  font-size: 0.78rem;
+  margin: 0;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.error-close-btn {
+  background: transparent;
+  border: none;
+  color: #991b1b;
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.error-close-btn:hover {
+  opacity: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
 }
