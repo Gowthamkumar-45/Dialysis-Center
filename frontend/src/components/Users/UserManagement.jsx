@@ -89,7 +89,7 @@ const UserManagement = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mgmt-form">
+          <form onSubmit={handleSubmit} className="mgmt-form" autoComplete="off">
             <div className="form-grid">
               <div className="form-group">
                 <label>First Name</label>
@@ -102,6 +102,7 @@ const UserManagement = () => {
                     value={form.first_name}
                     onChange={handleChange}
                     required
+                    autoComplete="off"
                   />
                 </div>
               </div>
@@ -116,6 +117,7 @@ const UserManagement = () => {
                     value={form.last_name}
                     onChange={handleChange}
                     required
+                    autoComplete="off"
                   />
                 </div>
               </div>
@@ -130,6 +132,7 @@ const UserManagement = () => {
                     value={form.username}
                     onChange={handleChange}
                     required
+                    autoComplete="off"
                   />
                 </div>
               </div>
@@ -144,6 +147,7 @@ const UserManagement = () => {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    autoComplete="off"
                   />
                 </div>
               </div>
@@ -158,6 +162,7 @@ const UserManagement = () => {
                     value={form.password}
                     onChange={handleChange}
                     required
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -180,6 +185,7 @@ const UserManagement = () => {
                     value={form.password2}
                     onChange={handleChange}
                     required
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
