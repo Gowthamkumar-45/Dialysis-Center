@@ -13,6 +13,7 @@ import Inventory from './components/Inventory/Inventory';
 import Billing from './components/Billing/Billing';
 import Attendance from './components/Attendance/Attendance';
 import Login from './components/Login/Login';
+import Register from './components/Login/Register';
 import UserManagement from './components/Users/UserManagement';
 import History from './components/History/History';
 import Notifications from './components/Notifications/Notifications';
@@ -31,6 +32,7 @@ function App() {
           <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* Protected app */}
           <Route
