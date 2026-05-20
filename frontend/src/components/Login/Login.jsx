@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Stethoscope, Mail, Lock, Eye, EyeOff, ShieldCheck, HeartPulse, Activity, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Login.css';
@@ -165,12 +165,6 @@ const Login = () => {
               </button>
             </form>
 
-            <div className="auth-divider"><span>or</span></div>
-
-            <p className="auth-footer-text">
-              Don't have an account?{' '}
-              <Link to="/register" className="auth-link">Sign up</Link>
-            </p>
           </div>
         </section>
       </div>
