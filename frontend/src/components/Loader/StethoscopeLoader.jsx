@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
 import './StethoscopeLoader.css';
 import { Stethoscope } from 'lucide-react';
 
 const StethoscopeLoader = () => {
-  const { loading } = useLoading();
+  const { loading, showLoading, hideLoading } = useLoading();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Show page loader on navigation (pathname change) for a brief, smooth transition
+    showLoading();
+    const timer = setTimeout(() => {
+      hideLoading();
+    }, 300); // 300ms smooth page transition delay
+
+    return () => clearTimeout(timer);
+  }, [location.pathname, showLoading, hideLoading]);
 
   if (!loading) return null;
 
