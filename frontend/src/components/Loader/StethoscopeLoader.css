@@ -4,14 +4,24 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
   z-index: 999999; /* Higher than any modal or sidebar */
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease, opacity 0.3s ease;
+}
+
+.stethoscope-loader-overlay.visible {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   pointer-events: all;
+  opacity: 1;
 }
 
 .stethoscope-loader-container {
