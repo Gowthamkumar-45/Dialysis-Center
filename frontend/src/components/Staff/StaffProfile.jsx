@@ -19,7 +19,7 @@ const StaffProfile = () => {
   const [activeTab, setActiveTab] = useState('Overview');
   const [member, setMember] = useState(null);
   const [appointments, setAppointments] = useState([]);
-  const [attendancePercentage, setAttendancePercentage] = useState('100%');
+  const [attendancePercentage, setAttendancePercentage] = useState('—');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,10 +57,10 @@ const StaffProfile = () => {
             const pct = Math.round((attendedCount / activeRecords.length) * 100);
             setAttendancePercentage(`${pct}%`);
           } else {
-            setAttendancePercentage('100%');
+            setAttendancePercentage('—');
           }
         } else {
-          setAttendancePercentage('100%');
+          setAttendancePercentage('—');
         }
       } catch (err) {
         console.error('Error fetching staff data:', err);
