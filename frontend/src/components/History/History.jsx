@@ -25,6 +25,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { activityService } from '../../services/api';
+import { useLocation } from 'react-router-dom';
 import HistoryModal from './HistoryModal';
 import './History.css';
 
@@ -90,12 +91,16 @@ const initialsFor = (name) => {
 };
 
 const History = () => {
+  const location = useLocation();
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const initialEntity = queryParams.get('entity') || 'All';
+
   const [logs, setLogs] = useState([]);
   const [summary, setSummary] = useState({ total: 0, today: 0, this_week: 0, creates: 0, updates: 0, deletes: 0 });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [action, setAction] = useState('All');
-  const [entity, setEntity] = useState('All');
+  const [entity, setEntity] = useState(initialEntity);
   const [search, setSearch] = useState('');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
@@ -103,6 +108,13 @@ const History = () => {
   const [expanded, setExpanded] = useState({});
   const [autoRefresh, setAutoRefresh] = useState(true);
   const pollRef = useRef(null);
+
+  useEffect(() => {
+    const qEntity = queryParams.get('entity');
+    if (qEntity) {
+      setEntity(qEntity);
+    }
+  }, [queryParams]);
 
   const fetchData = useCallback(async (silent = false) => {
     try {
