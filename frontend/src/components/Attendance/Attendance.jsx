@@ -322,10 +322,16 @@ const Attendance = () => {
         {loading ? (
           <div className="att-empty">Loading attendance…</div>
         ) : paginatedRoster.length === 0 ? (
-          <div className="att-empty">
-            {roster.length === 0
-              ? 'No staff members registered yet.'
-              : 'No records match your filters.'}
+          <div className="empty-state-container">
+            <div className="empty-state-card">
+              <Calendar size={48} className="empty-state-icon" />
+              <h4>No Attendance Records</h4>
+              <p>
+                {roster.length === 0
+                  ? 'No staff members are registered in the system yet. Please register staff members first.'
+                  : 'No records match your active search filters or selected date.'}
+              </p>
+            </div>
           </div>
         ) : (
           <>

@@ -338,10 +338,16 @@ const Staff = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '3rem' }}>Loading staff...</div>
       ) : filteredStaff.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          {searchTerm || activeFilter !== 'All Staff'
-            ? 'No matching staff found.'
-            : 'No staff registered yet. Click "Add Staff Member" to add one.'}
+        <div className="empty-state-container">
+          <div className="empty-state-card">
+            <Users size={48} className="empty-state-icon" />
+            <h4>No Staff Members Found</h4>
+            <p>
+              {searchTerm || activeFilter !== 'All Staff'
+                ? 'No matching staff members found with the current filters.'
+                : 'No staff members registered in the system yet. Click Add Staff Member to register one.'}
+            </p>
+          </div>
         </div>
       ) : (
         <div className="staff-grid">

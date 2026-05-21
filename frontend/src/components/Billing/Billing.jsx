@@ -345,10 +345,17 @@ const Billing = () => {
               </tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={8}>
+                <td colSpan={8} style={{ padding: 0 }}>
                   <div className="empty-state-container">
-                    <Receipt size={48} className="empty-icon" />
-                    <p>No invoices found.</p>
+                    <div className="empty-state-card">
+                      <Receipt size={48} className="empty-state-icon" />
+                      <h4>No Invoices Found</h4>
+                      <p>
+                        {search || activeStatus !== 'All'
+                          ? 'No billing records or invoices match the selected search filters.'
+                          : 'No invoices registered in the system yet. Click New Invoice to record a transaction.'}
+                      </p>
+                    </div>
                   </div>
                 </td>
               </tr>

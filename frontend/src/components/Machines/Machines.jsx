@@ -246,15 +246,17 @@ const Machines = () => {
             <span>Loading units…</span>
           </div>
         ) : filteredMachines.length === 0 ? (
-          <div className="empty-floor-state">
-            <Monitor size={64} color="#cbd5e1" />
-            <h3>{searchTerm ? 'No units match your search' : 'No machines registered'}</h3>
-            <p>{searchTerm ? 'Try a different keyword.' : 'Add a new dialysis unit to get started.'}</p>
-            {!searchTerm && (
-              <button className="add-unit-btn" onClick={handleAdd} style={{ marginTop: '2rem' }}>
-                <Plus size={18} /> Add First Machine
-              </button>
-            )}
+          <div className="empty-state-container">
+            <div className="empty-state-card">
+              <Monitor size={48} className="empty-state-icon" />
+              <h4>{searchTerm ? 'No Units Match Search' : 'No Machines Registered'}</h4>
+              <p>{searchTerm ? 'Try using a different search query or filter.' : 'Register dialysis machine units to allocate sessions.'}</p>
+              {!searchTerm && (
+                <button className="add-unit-btn" onClick={handleAdd} style={{ marginTop: '1.25rem' }}>
+                  <Plus size={18} /> Add First Machine
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           MACHINE_GROUPS.map(group => {

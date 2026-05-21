@@ -192,10 +192,16 @@ const Notifications = () => {
         {loading ? (
           <div className="notif-page-empty">Loading…</div>
         ) : notifications.length === 0 ? (
-          <div className="notif-page-empty">
-            <Bell size={32} />
-            <h3>No notifications</h3>
-            <p>When something needs your attention, it'll appear here.</p>
+          <div className="empty-state-container">
+            <div className="empty-state-card">
+              <Bell size={48} className="empty-state-icon" />
+              <h4>No Notifications</h4>
+              <p>
+                {severity !== 'All' || category !== 'All' || readFilter !== 'all'
+                  ? 'No notifications match your active search filters.'
+                  : "Everything is running smoothly! When something needs your attention, it will appear here."}
+              </p>
+            </div>
           </div>
         ) : (
           <div className="notif-list">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PatientModal from './PatientModal';
 import { patientService, appointmentService } from '../../services/api';
@@ -164,7 +164,21 @@ const Patients = () => {
             {loading ? (
               <tr><td colSpan="7" style={{ textAlign: 'center', padding: '3rem' }}>Loading data...</td></tr>
             ) : filteredPatients.length === 0 ? (
-              <tr><td colSpan="7" style={{ textAlign: 'center', padding: '3rem' }}>No patients found</td></tr>
+              <tr>
+                <td colSpan="7" style={{ padding: 0 }}>
+                  <div className="empty-state-container">
+                    <div className="empty-state-card">
+                      <Users size={48} className="empty-state-icon" />
+                      <h4>No Patients Found</h4>
+                      <p>
+                        {search || statusFilter !== 'All Status' || hivFilter !== 'Any HIV Status'
+                          ? 'No registered patients match the selected search or filters.'
+                          : 'No patients registered in the system yet. Click Add Patient to get started.'}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
             ) : (
               filteredPatients.map(patient => {
                 const { lastSession } = getPatientSessionInfo(patient.id);

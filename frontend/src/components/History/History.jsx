@@ -280,10 +280,16 @@ const History = () => {
         {loading ? (
           <div className="hist-empty">Loading activity…</div>
         ) : logs.length === 0 ? (
-          <div className="hist-empty">
-            <Activity size={28} />
-            <h3>No activity yet</h3>
-            <p>System actions like creating a patient, updating a record, or deleting will appear here in real time.</p>
+          <div className="empty-state-container">
+            <div className="empty-state-card">
+              <Activity size={48} className="empty-state-icon" />
+              <h4>No Activity Recorded</h4>
+              <p>
+                {search || action !== 'All' || entity !== 'All' || start || end
+                  ? 'No system logs match your active search filters.'
+                  : 'System actions like creating a patient, updating a record, or deleting will appear here in real time.'}
+              </p>
+            </div>
           </div>
         ) : (
           grouped.map(([day, entries]) => (

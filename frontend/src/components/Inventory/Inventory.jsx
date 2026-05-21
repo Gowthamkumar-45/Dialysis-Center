@@ -302,10 +302,17 @@ const Inventory = () => {
               </tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={7}>
+                <td colSpan={7} style={{ padding: 0 }}>
                   <div className="empty-state-container">
-                    <Package size={48} className="empty-icon" />
-                    <p>No items found.</p>
+                    <div className="empty-state-card">
+                      <Package size={48} className="empty-state-icon" />
+                      <h4>No Inventory Items Found</h4>
+                      <p>
+                        {search || activeCategory !== 'All'
+                          ? 'No items found matching your current filters.'
+                          : 'No items recorded in inventory yet. Click Add Item to register stock.'}
+                      </p>
+                    </div>
                   </div>
                 </td>
               </tr>
