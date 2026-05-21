@@ -835,3 +835,45 @@
     transform: translateY(0);
   }
 }
+
+/* Empty state styling */
+.empty-state-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5rem 2rem;
+  background-color: #ffffff;
+  width: 100%;
+}
+
+.empty-state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 420px;
+  gap: 0.75rem;
+}
+
+.empty-state-icon {
+  color: #94a3b8;
+  background: #f8fafc;
+  padding: 1.25rem;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-card h4 {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+}
+
+.empty-state-card p {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}

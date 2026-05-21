@@ -294,6 +294,14 @@ const Scheduling = () => {
             <div className="grid-body daily-standard">
               {loading ? (
                 <div className="p-10 text-center">Loading machine allocation...</div>
+              ) : machines.length === 0 ? (
+                <div className="empty-state-container">
+                  <div className="empty-state-card">
+                    <Monitor size={48} className="empty-state-icon" />
+                    <h4>No Machine Units Configured</h4>
+                    <p>There are no dialysis machines registered in the system. Add machine units to set up schedules.</p>
+                  </div>
+                </div>
               ) : (
                 machines.map((machine, index) => {
                 const unitNum = machine.unit_number;
@@ -395,6 +403,14 @@ const Scheduling = () => {
             <div className="grid-body">
               {loading ? (
                 <div className="p-10 text-center">Loading machine allocation...</div>
+              ) : machines.length === 0 ? (
+                <div className="empty-state-container">
+                  <div className="empty-state-card">
+                    <Monitor size={48} className="empty-state-icon" />
+                    <h4>No Machine Units Configured</h4>
+                    <p>There are no dialysis machines registered in the system. Add machine units to set up schedules.</p>
+                  </div>
+                </div>
               ) : (
                 machines.map((machine) => (
                   <div key={machine.id} className="grid-row weekly">
