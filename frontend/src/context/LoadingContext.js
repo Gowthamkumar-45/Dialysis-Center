@@ -20,14 +20,41 @@ export const LoadingProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    let showTimer;
+    let hideTimer;
+
     if (apiLoadingCount > 0) {
-      const timer = setTimeout(() => {
-        setLoading(true);
-      }, 200); // 200ms debounce to prevent loader from flashing on quick requests
-      return () => clearTimeout(timer);
+      // Debounce: Wait 250ms before showing the loader
+      showTimer = setTimeout(() => {
+        setLoading((current) => {
+          if (!current) {
+            window.loaderShowTime = Date.now();
+            return true;
+          }
+          return current;
+        });
+      }, 250);
     } else {
-      setLoading(false);
+      const showTime = window.loaderShowTime || 0;
+      const elapsed = Date.now() - showTime;
+      const minDuration = 400; // Force loader to display for at least 400ms to prevent quick flashing
+
+      if (showTime && elapsed < minDuration) {
+        const remaining = minDuration - elapsed;
+        hideTimer = setTimeout(() => {
+          setLoading(false);
+          window.loaderShowTime = null;
+        }, remaining);
+      } else {
+        setLoading(false);
+        window.loaderShowTime = null;
+      }
     }
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
   }, [apiLoadingCount]);
 
   return (
