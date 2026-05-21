@@ -3,12 +3,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const LoadingContext = createContext(null);
 
 export const LoadingProvider = ({ children }) => {
-  const [routeLoading, setRouteLoading] = useState(false);
   const [apiLoadingCount, setApiLoadingCount] = useState(0);
   const [loading, setLoading] = useState(false);
-
-  const showLoading = () => setRouteLoading(true);
-  const hideLoading = () => setRouteLoading(false);
 
   useEffect(() => {
     const handleStart = () => setApiLoadingCount((prev) => prev + 1);
@@ -24,9 +20,7 @@ export const LoadingProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (routeLoading) {
-      setLoading(true);
-    } else if (apiLoadingCount > 0) {
+    if (apiLoadingCount > 0) {
       const timer = setTimeout(() => {
         setLoading(true);
       }, 200); // 200ms debounce to prevent loader from flashing on quick requests
@@ -34,10 +28,10 @@ export const LoadingProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, [routeLoading, apiLoadingCount]);
+  }, [apiLoadingCount]);
 
   return (
-    <LoadingContext.Provider value={{ loading, showLoading, hideLoading }}>
+    <LoadingContext.Provider value={{ loading }}>
       {children}
     </LoadingContext.Provider>
   );
