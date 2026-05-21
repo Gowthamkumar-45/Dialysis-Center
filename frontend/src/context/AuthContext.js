@@ -8,13 +8,13 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const storedUser = localStorage.getItem('authUser');
+    const token = sessionStorage.getItem('authToken');
+    const storedUser = sessionStorage.getItem('authUser');
     if (token && storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch {
-        localStorage.removeItem('authUser');
+        sessionStorage.removeItem('authUser');
       }
     }
     setLoading(false);
@@ -22,16 +22,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     const { data } = await authService.login(username, password);
-    localStorage.setItem('authToken', data.token);
-    localStorage.setItem('authUser', JSON.stringify(data.user));
+    sessionStorage.setItem('authToken', data.token);
+    sessionStorage.setItem('authUser', JSON.stringify(data.user));
     setUser(data.user);
     return data;
   };
 
   const register = async (payload) => {
     const { data } = await authService.register(payload);
-    localStorage.setItem('authToken', data.token);
-    localStorage.setItem('authUser', JSON.stringify(data.user));
+    sessionStorage.setItem('authToken', data.token);
+    sessionStorage.setItem('authUser', JSON.stringify(data.user));
     setUser(data.user);
     return data;
   };
@@ -42,8 +42,8 @@ export const AuthProvider = ({ children }) => {
     } catch {
       // ignore — clear locally anyway
     }
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('authUser');
     setUser(null);
   };
 

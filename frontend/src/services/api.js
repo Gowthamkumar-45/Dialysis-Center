@@ -9,7 +9,7 @@ const api = axios.create({
 
 // Attach token to every request if logged in
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
   if (token) {
     config.headers.Authorization = `Token ${token}`;
   }
@@ -37,8 +37,8 @@ api.interceptors.response.use(
       window.dispatchEvent(new CustomEvent('api-loading-end'));
     }
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('authUser');
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('authUser');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
