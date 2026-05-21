@@ -130,6 +130,10 @@ export const activityService = {
   getSummary: () => api.get('/activity/summary/'),
 };
 
+export const userService = {
+  getAll: () => api.get('/users/'),
+};
+
 export const attendanceService = {
   getAll: (params) => api.get('/attendance/', { params }),
   getRoster: (date) => api.get('/attendance/daily_roster/', { params: { date } }),

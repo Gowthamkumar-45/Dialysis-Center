@@ -4,7 +4,7 @@ from .views import (
     PatientViewSet, MachineViewSet, StaffViewSet,
     AppointmentViewSet, TreatmentSessionViewSet, ServiceLogViewSet,
     InventoryItemViewSet, InvoiceViewSet, AttendanceViewSet,
-    ActivityLogViewSet, NotificationViewSet,
+    ActivityLogViewSet, NotificationViewSet, UserViewSet,
     login_view, register_view, logout_view, me_view
 )
 
@@ -18,6 +18,7 @@ router.register(r'service-logs', ServiceLogViewSet)
 router.register(r'inventory', InventoryItemViewSet)
 router.register(r'invoices', InvoiceViewSet)
 router.register(r'attendance', AttendanceViewSet)
+router.register(r'users', UserViewSet)
 router.register(r'activity', ActivityLogViewSet, basename='activity')
 router.register(r'notifications', NotificationViewSet, basename='notification')
 

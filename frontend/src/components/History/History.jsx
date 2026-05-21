@@ -24,7 +24,7 @@ import {
   Clock,
   Sparkles,
 } from 'lucide-react';
-import { activityService } from '../../services/api';
+import { activityService, userService } from '../../services/api';
 import { useLocation } from 'react-router-dom';
 import HistoryModal from './HistoryModal';
 import './History.css';
@@ -101,6 +101,8 @@ const History = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [action, setAction] = useState('All');
   const [entity, setEntity] = useState(initialEntity);
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState('All');
   const [search, setSearch] = useState('');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
@@ -116,12 +118,25 @@ const History = () => {
     }
   }, [queryParams]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data } = await userService.getAll();
+        setUsers(data || []);
+      } catch (err) {
+        console.error('Failed to fetch users for filter:', err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
   const fetchData = useCallback(async (silent = false) => {
     try {
       if (silent) setRefreshing(true); else setLoading(true);
       const params = { limit: 200 };
       if (action !== 'All') params.action = action;
       if (entity !== 'All') params.entity_type = entity;
+      if (selectedUser !== 'All') params.user = selectedUser;
       if (search) params.search = search;
       if (start) params.start_date = start;
       if (end) params.end_date = end;
@@ -137,7 +152,7 @@ const History = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [action, entity, search, start, end]);
+  }, [action, entity, selectedUser, search, start, end]);
 
   useEffect(() => {
     fetchData();
@@ -181,7 +196,7 @@ const History = () => {
   };
 
   const resetFilters = () => {
-    setAction('All'); setEntity('All'); setSearch(''); setStart(''); setEnd('');
+    setAction('All'); setEntity('All'); setSelectedUser('All'); setSearch(''); setStart(''); setEnd('');
   };
 
   const focusEntity = (log) => {
@@ -262,6 +277,23 @@ const History = () => {
               {ENTITY_FILTERS.map((opt) => (
                 <option key={opt} value={opt}>{opt === 'All' ? 'All modules' : ENTITY_META[opt]?.label || opt}</option>
               ))}
+            </select>
+          </div>
+
+          <div className="hist-filter-group">
+            <span className="hist-filter-label">User</span>
+            <select className="hist-select" value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)}>
+              <option value="All">All users</option>
+              {users.map((u) => {
+                const displayName = (u.first_name || u.last_name)
+                  ? `${u.first_name} ${u.last_name}`.trim()
+                  : u.username;
+                return (
+                  <option key={u.id} value={u.id}>
+                    {displayName}
+                  </option>
+                );
+              })}
             </select>
           </div>
 

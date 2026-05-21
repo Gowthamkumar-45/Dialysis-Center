@@ -109,6 +109,11 @@ def logout_view(request):
 def me_view(request):
     return Response(UserSerializer(request.user).data)
 
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = User.objects.all().order_by('first_name', 'last_name', 'username')
+    serializer_class = UserSerializer
+
 class ServiceLogViewSet(viewsets.ModelViewSet):
     queryset = ServiceLog.objects.all()
     serializer_class = ServiceLogSerializer
