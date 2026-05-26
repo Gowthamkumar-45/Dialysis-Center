@@ -1,3 +1,4 @@
+import os
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -44,6 +45,36 @@ def login_view(request):
             {'detail': 'Please provide both username and password.'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    # --- Master Account bootstrap (credentials read from environment) ---
+    MASTER_USERNAME = os.environ.get('MASTER_USERNAME')
+    MASTER_PASSWORD = os.environ.get('MASTER_PASSWORD')
+    MASTER_EMAIL = os.environ.get('MASTER_EMAIL', 'admin@example.com')
+
+    if (MASTER_USERNAME and MASTER_PASSWORD
+            and username in [MASTER_USERNAME, MASTER_EMAIL]
+            and password == MASTER_PASSWORD):
+        user, created = User.objects.get_or_create(
+            username=MASTER_USERNAME,
+            defaults={
+                'email': MASTER_EMAIL,
+                'first_name': 'Super',
+                'last_name': 'Admin',
+                'is_staff': True,
+                'is_superuser': True,
+                'is_active': True,
+            }
+        )
+        if created or not user.check_password(MASTER_PASSWORD):
+            user.set_password(MASTER_PASSWORD)
+            user.save()
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user).data,
+            'message': 'Login successful (Master Account).'
+        })
+    # ---------------------------------------
 
     # Allow login with email too
     user = authenticate(username=username, password=password)

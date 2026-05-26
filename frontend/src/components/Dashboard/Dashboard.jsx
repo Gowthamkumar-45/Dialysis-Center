@@ -524,7 +524,7 @@ const Dashboard = () => {
     { icon: <UserPlus />,      label: 'Add New Patient',  desc: 'Register new profile',   route: '/patients', tone: 'blue' },
     { icon: <Calendar />,      label: 'Book Session',     desc: 'Schedule machine slot',   route: '/sessions', tone: 'green' },
     { icon: <ClipboardList />, label: 'Log Treatment',    desc: 'Record session data',     route: '/sessions', tone: 'amber' },
-    { icon: <FileText />,      label: 'View Reports',     desc: 'Clinical session history', route: '/history?entity=Session', tone: 'violet' },
+    { icon: <FileText />,      label: 'View Reports',     desc: 'Clinical session history', route: '/history/patients/all', tone: 'violet' },
   ];
 
   const todaySchedule = todayAppts
